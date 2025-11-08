@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mettre à jour mes coordonnées</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/update.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="custom-card">
+            <h1>Mettre à jour mes coordonnées</h1>
+
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="form-btn">
+                    <button type="submit" class="btn-submit">Enregistrer</button>
+                </div>
+            </form>
+
+            <p class="back-home">
+                <a href="{% url 'acceuil_patient' %}">Retour à l'accueil</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

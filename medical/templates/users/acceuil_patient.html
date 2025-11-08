@@ -1,0 +1,31 @@
+<!-- templates/users/acceuil_patient.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Accueil Patient</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/patient_home.css' %}">
+</head>
+<body>
+    <div class="container">
+        <div class="custom-card">
+            <h1>Bienvenue Patient !</h1>
+            <p>Page d'accueil pour les patients.</p>
+
+            <div class="actions">
+                <a href="{% url 'update_patient' %}" class="btn-custom">Modifier mes coordonnées</a>
+
+                <form action="{% url 'delete_patient' %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-delete">Supprimer mon compte</button>
+                </form>
+            </div>
+
+            <p class="back-home">
+                <a href="{% url 'home' %}">Retour à l'accueil</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!-- templates/users/signin.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <div class="container" style="max-width: 500px; margin: 50px auto;">
+        <div class="custom-card">
+            <h1>Se connecter</h1>
+
+            {% if error %}
+                <p class="alert">{{ error }}</p>
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <label>Email :</label>
+                <input type="email" name="email" required>
+
+                <label>Mot de passe :</label>
+                <input type="password" name="password" required>
+
+                <label>Je suis :</label>
+                <div class="radio-group">
+                    <input type="radio" id="patient" name="role" value="patient" checked>
+                    <label for="patient">Patient</label>
+
+                    <input type="radio" id="medecin" name="role" value="medecin">
+                    <label for="medecin">Médecin</label>
+                </div>
+
+                <div style="text-align:center; margin-top: 15px;">
+                    <button type="submit" class="btn-custom">Se connecter</button>
+                </div>
+            </form>
+
+            <p style="text-align:center; margin-top:15px;">
+                <a href="{% url 'home' %}" class="btn-custom" style="padding:8px 20px; font-size:0.95rem; background:#fff; color:#007bff; border:2px solid #007bff; border-radius:50px; transition:0.3s;">Retour à l'accueil</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
