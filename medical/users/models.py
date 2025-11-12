@@ -65,6 +65,7 @@ STATUT_CHOICES = [
 ROLE_CHOICES = [
     ('patient', 'Patient'),
     ('medecin', 'Médecin'),
+    ('admin', 'Administrateur'),
 ]
 
 # -------------------------
@@ -81,6 +82,21 @@ class User(AbstractUser):
     ville = models.CharField("Ville", max_length=50, validators=[city_validator])
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
 
+    #champs specifiques aux patients
+    etat_compte = models.CharField(
+        max_length=20,
+        choices=[('actif', 'Actif'), ('archive', 'Archivé')],
+        default='actif'
+    )
+    date_creation = models.DateTimeField(auto_now_add=True)
+
+    def archiver_compte(self):
+        self.etat_compte = 'archive'
+        self.save()
+
+    def supprimer_compte(self):
+        self.delete()
+
     # Champs spécifiques aux médecins
     code_postal = models.CharField("Code postal", max_length=4, validators=[postal_code_validator], null=True, blank=True)
     specialite = models.CharField("Spécialité", max_length=100, choices=SPECIALITES, null=True, blank=True)
@@ -93,6 +109,7 @@ class User(AbstractUser):
         blank=True
     )
     statut = models.CharField(max_length=10, choices=STATUT_CHOICES, default='en cours')
+
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []  # Email + password suffisent

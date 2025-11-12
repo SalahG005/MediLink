@@ -10,6 +10,11 @@ urlpatterns = [
     path('signin/', views.signin, name='signin'),
     path('acceuil/patient/', views.acceuil_patient, name='acceuil_patient'),
     path('acceuil/medecin/', views.acceuil_medecin, name='acceuil_medecin'),
+    path('dashboard/home/', views.acceuil_admin, name='acceuil_admin'),    
     path('update/patient/', PatientUpdateView.as_view(), name='update_patient'),
-     path('delete/patient/', PatientDeleteView.as_view(), name='delete_patient'),
+    path('delete/patient/', PatientDeleteView.as_view(), name='delete_patient'),
+    path('dashboard/patient/<int:pk>/archiver/', views.archiver_patient, name='archiver_patient'),
+    path('dashboard/patient/<int:pk>/supprimer/', views.supprimer_patient, name='supprimer_patient'),
+    path('dashboard/patient/<int:pk>/reactiver/', views.reactiver_patient, name='reactiver_patient'),
+
 ]
