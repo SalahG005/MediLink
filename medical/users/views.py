@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect
 from .forms import PatientSignUpForm, MedecinSignUpForm
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.views.generic.edit import DeleteView
 from .forms import PatientSignUpForm, MedecinSignUpForm, PatientUpdateForm, LoginForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from gestion_medecins.models import Medecin
 
 # Page d'accueil
 def home(request):
@@ -46,13 +47,16 @@ def signin(request):
             if hasattr(user, 'etat_compte') and user.etat_compte == 'archive':
                 error = "Votre compte a été archivé. Veuillez contacter l'administrateur."
                 return render(request, 'users/signin.html', {'error': error})
+            if user.role == 'medecin' and getattr(user, 'statut', '') != 'verifie':
+                error = "Votre inscription est en cours de validation par l'administrateur."
+                return render(request, 'users/signin.html', {'error': error})
 
         if user and user.role == role:
             login(request, user)
             if role == 'patient':
                 return redirect('acceuil_patient')
             elif role == 'medecin':
-                return redirect('acceuil_medecin')
+                return redirect('dossiers:liste_dossiers')
             elif role == 'admin':
                 return redirect('acceuil_admin')
 
@@ -60,6 +64,11 @@ def signin(request):
         return render(request, 'users/signin.html', {'error': error})
 
     return render(request, 'users/signin.html')
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('signin')
 
 # Pages d'accueil spécifiques
 def acceuil_patient(request):
@@ -100,9 +109,16 @@ def acceuil_admin(request):
         messages.error(request, "Vous n'êtes pas autorisé à accéder à cette page.")
         return redirect('home')
 
-    # Show all patients
     patients = User.objects.filter(role='patient')
-    return render(request, 'users/acceuil_admin.html', {'patients': patients})
+    medecins_en_attente = Medecin.objects.filter(statut='en_attente').select_related('user')
+    medecins_valides = Medecin.objects.filter(statut='valide').select_related('user')
+
+    context = {
+        'patients': patients,
+        'medecins_en_attente': medecins_en_attente,
+        'medecins_valides': medecins_valides,
+    }
+    return render(request, 'users/acceuil_admin.html', context)
 
 
 @login_required

@@ -21,6 +21,8 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('users.urls')),
+    path('dossiers/', include('dossiers.urls')),
+    path('medecins/', include('gestion_medecins.urls')),
 ]
 
 # Sert les fichiers media (PDF, images, etc.) en développement

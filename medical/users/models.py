@@ -1,5 +1,7 @@
 # users/models.py
+from datetime import date
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
 from django.core.validators import RegexValidator, MinLengthValidator, EmailValidator, FileExtensionValidator
 
@@ -69,6 +71,40 @@ ROLE_CHOICES = [
 ]
 
 # -------------------------
+# MANAGER PERSONNALISÉ
+# -------------------------
+class UserManager(BaseUserManager):
+    use_in_migrations = True
+
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("L'adresse email est obligatoire.")
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('role', 'admin')
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('first_name', extra_fields.get('first_name', 'Admin'))
+        extra_fields.setdefault('last_name', extra_fields.get('last_name', 'User'))
+        extra_fields.setdefault('phone', extra_fields.get('phone', '00000000'))
+        extra_fields.setdefault('date_of_birth', extra_fields.get('date_of_birth', date(2000, 1, 1)))
+        extra_fields.setdefault('gouvernorat', extra_fields.get('gouvernorat', GOUVERNORATS[0][0]))
+        extra_fields.setdefault('ville', extra_fields.get('ville', GOUVERNORATS[0][0]))
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Le superutilisateur doit avoir is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Le superutilisateur doit avoir is_superuser=True.')
+
+        return self.create_user(email, password, **extra_fields)
+
+
+# -------------------------
 # MODELE USER UNIQUE
 # -------------------------
 class User(AbstractUser):
@@ -109,6 +145,8 @@ class User(AbstractUser):
         blank=True
     )
     statut = models.CharField(max_length=10, choices=STATUT_CHOICES, default='en cours')
+
+    objects = UserManager()
 
 
     USERNAME_FIELD = 'email'
