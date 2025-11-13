@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Calendrier des Rendez-vous{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-lg border-0 rounded-4 custom-card">
+    <div class="card-body p-4">
+      <h2 class="text-center mb-4 fw-bold text-primary">
+        📅 Choisissez votre créneau disponible
+      </h2>
+      <div id="calendar" class="calendar-wrapper"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- 🎨 FullCalendar -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+
+<!-- 💅 Custom CSS -->
+<link rel="stylesheet" href="{% static 'css/calendar.css' %}">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        selectable: true,
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: [
+            {% for slot in slots %}
+            {
+                title: "{% if slot.is_available %}Disponible{% else %}Réservé{% endif %}",
+                start: "{{ slot.date|date:'Y-m-d\\TH:i:s' }}",
+                color: "{% if slot.is_available %}#28a745{% else %}#dc3545{% endif %}",
+                url: "{% if slot.is_available %}{% url 'rendezvous:prendre_rendezvous' slot.id %}{% endif %}"
+            }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ],
+        eventClick: function(info) {
+            if (info.event.url) {
+                info.jsEvent.preventDefault();
+                const confirmed = confirm("Voulez-vous prendre rendez-vous à cette date ?");
+                if (confirmed) {
+                    window.location.href = info.event.url;
+                }
+            } else {
+                alert("Ce créneau est déjà réservé ❌");
+            }
+        }
+    });
+    calendar.render();
+});
+</script>
+{% endblock %}

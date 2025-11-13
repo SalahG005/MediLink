@@ -1,0 +1,42 @@
+{% extends 'dossiers/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+
+<form method="post" class="mt-4">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">{{ form.patient.label }}</label>
+        {{ form.patient }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">{{ form.motif_consultation.label }}</label>
+        {{ form.motif_consultation }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">{{ form.diagnostic.label }}</label>
+        {{ form.diagnostic }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">{{ form.traitement.label }}</label>
+        {{ form.traitement }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">{{ form.observations.label }}</label>
+        {{ form.observations }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">{{ form.allergies.label }}</label>
+        {{ form.allergies }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">{{ form.antecedents.label }}</label>
+        {{ form.antecedents }}
+    </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <a href="{% url 'dossiers:liste_dossiers' %}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}
+

@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block title %}Liste des spécialités{% endblock %}
+{% load static %}
+{% block content %}
+<style>
+/* Header color subtle blue gradient */
+.table-header-gradient th {
+  background: linear-gradient(90deg, #d7ecff 0%, #eef7ff 100%);
+  color: #023e8a; /* darker blue for header text */
+  font-weight: 600;
+  vertical-align: middle;
+}
+
+/* Icon buttons: simple, black, no extra border */
+.icon-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 8px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+/* Slight hover effect to indicate interactivity */
+.icon-btn:hover {
+  background: rgba(0,0,0,0.04);
+  border-radius: 6px;
+}
+
+/* Top action bar */
+.top-actions {
+  display:flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* Search input */
+#searchInput {
+  width: 250px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+}
+
+/* Table card */
+.table-card {
+  box-shadow: 0 6px 18px rgba(2,62,138,0.06);
+  border-radius: 8px;
+  overflow: hidden;
+}
+</style>
+
+<div class="container mt-5 pt-4">
+
+    <div class="top-actions">
+        <!-- Left: delete selected -->
+        <form method="POST" id="deleteForm" action="{% url 'supprimer_specialites_selectionnees' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn-icon-pill icon-btn" title="Supprimer la sélection"
+                    onclick="return confirm('Voulez-vous vraiment supprimer toutes les spécialités sélectionnées ?');">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                  <path d="M10 11v6"></path>
+                  <path d="M14 11v6"></path>
+                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+                </svg>
+            </button>
+        </form>
+
+        <!-- Right: search + add button -->
+        <div class="d-flex align-items-center gap-2">
+            <input type="text" id="searchInput" placeholder="Rechercher...">
+            <a href="{% url 'ajouter_specialite' %}" class="btn btn-outline-primary rounded-pill px-3 shadow-sm" title="Ajouter une spécialité">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#002e5b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Ajouter
+            </a>
+        </div>
+    </div>
+
+    {% if specialites %}
+    <div class="table-card">
+        <form method="POST" id="bulkForm" action="{% url 'supprimer_specialites_selectionnees' %}">
+            {% csrf_token %}
+            <table class="table table-hover table-borderless mb-0" id="specialitesTable">
+                <thead class="table-header-gradient text-center">
+                    <tr>
+                        <th style="width:48px">
+                            <input type="checkbox" id="select_all" onclick="toggleSelectAll(this)">
+                        </th>
+                        <th style="width:80px">ID</th>
+                        <th>Nom</th>
+                        <th>Description</th>
+                        <th style="width:110px">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for specialite in specialites %}
+                    <tr class="align-middle">
+                        <td class="text-center">
+                            <input type="checkbox" name="selected_ids" value="{{ specialite.id_specialite }}">
+                        </td>
+                        <td class="text-center fw-semibold">{{ specialite.id_specialite }}</td>
+                        <td>{{ specialite.nom_specialite }}</td>
+                        <td>{{ specialite.description|default:"—" }}</td>
+                        <td class="text-center">
+                            <a href="{% url 'modifier_specialite' specialite.id_specialite %}" class="icon-btn" title="Modifier">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                  <path d="M12 20h9"></path>
+                                  <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
+                                </svg>
+                            </a>
+                            <a href="{% url 'supprimer_specialite' specialite.id_specialite %}" class="icon-btn" title="Supprimer"
+                               onclick="return confirm('Voulez-vous vraiment supprimer cette spécialité ?');">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                                  <polyline points="3 6 5 6 21 6"></polyline>
+                                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                                  <path d="M10 11v6"></path>
+                                  <path d="M14 11v6"></path>
+                                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+                                </svg>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </form>
+    </div>
+
+    {% else %}
+    <div class="alert alert-info text-center shadow-sm mt-4">
+        Aucune spécialité trouvée. Cliquez sur <strong>Ajouter</strong> pour en créer une.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleSelectAll(source) {
+    const checkboxes = document.getElementsByName('selected_ids');
+    for (let i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = source.checked;
+    }
+}
+
+// Recherche en temps réel
+document.getElementById('searchInput').addEventListener('keyup', function() {
+    const filter = this.value.toLowerCase();
+    const rows = document.querySelectorAll('#specialitesTable tbody tr');
+    rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(filter) ? '' : 'none';
+    });
+});
+</script>
+{% endblock %}

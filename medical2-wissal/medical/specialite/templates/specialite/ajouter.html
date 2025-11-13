@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+{% load form_tags %}
+
+{% block title %}Ajouter une spécialité{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+  <div class="row g-4">
+
+    <!-- Colonne gauche : Liste des spécialités -->
+    <div class="col-md-4">
+      <h5 class="mb-3 text-primary fw-semibold">Spécialités disponibles</h5>
+      {% if specialites %}
+      <div class="specialites-list" style="max-height: 500px; overflow-y: auto;">
+        {% for s in specialites %}
+        <div class="specialite-card mb-2 p-3 shadow-sm rounded-3">
+          {{ s.nom_specialite }}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="alert alert-info text-center p-2">
+        Aucune spécialité disponible.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Colonne droite : Formulaire -->
+    <div class="col-md-8">
+      <div class="card p-4 rounded-4 border-0" style="background: #f8f9fa;">
+        <h3 class="text-center text-primary mb-4">Ajouter une spécialité</h3>
+
+        <form method="post" novalidate>
+          {% csrf_token %}
+
+          <!-- Nom -->
+          <div class="mb-3">
+            <label for="id_nom_specialite" class="form-label fw-semibold">Nom de la spécialité</label>
+            {{ form.nom_specialite|add_class:"form-control" }}
+            {% if form.nom_specialite.errors %}
+              <div class="text-danger small mt-1">{{ form.nom_specialite.errors }}</div>
+            {% endif %}
+          </div>
+
+          <!-- Description -->
+          <div class="mb-3">
+            <label for="id_description" class="form-label fw-semibold">Description</label>
+            {{ form.description|add_class:"form-control" }}
+            {% if form.description.errors %}
+              <div class="text-danger small mt-1">{{ form.description.errors }}</div>
+            {% endif %}
+          </div>
+
+          <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-primary px-4 py-2">Enregistrer</button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.specialite-card {
+  background: #ffffff;
+  border-left: 4px solid #023e8a;
+  font-weight: 500;
+  padding: 12px 16px;
+  cursor: default;
+  transition: all 0.2s ease-in-out;
+}
+.specialite-card:hover {
+  background: #eef7ff;
+}
+.specialites-list::-webkit-scrollbar {
+  width: 6px;
+}
+.specialites-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+.specialites-list::-webkit-scrollbar-thumb {
+  background: #023e8a;
+  border-radius: 3px;
+}
+input.form-control, textarea.form-control {
+  border-radius: 6px;
+  border: 1px solid #ced4da;
+  transition: border 0.3s, box-shadow 0.3s;
+}
+input.form-control:focus, textarea.form-control:focus {
+  border-color: #023e8a;
+  box-shadow: none;
+}
+.btn-primary {
+  border-radius: 50px;
+  background-color: #023e8a;
+  border-color: #023e8a;
+}
+.btn-primary:hover {
+  background-color: #002e5b;
+  border-color: #002e5b;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Mes Rendez-vous{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-body p-4">
+      <h2 class="mb-4 text-center fw-bold text-primary">
+        📋 Mes Rendez-vous
+      </h2>
+
+      {% if mes_rdv %}
+        <div class="list-group">
+          {% for rdv in mes_rdv %}
+            <div class="list-group-item d-flex justify-content-between align-items-center mb-3 shadow-sm rounded-3 p-3">
+              <div>
+                <h5 class="mb-1 text-dark">
+                  🕒 {{ rdv.slot.date|date:"d M Y à H:i" }}
+                </h5>
+                <p class="mb-0">
+                  <span class="badge 
+                    {% if rdv.status == 'pending' %} bg-warning text-dark 
+                    {% elif rdv.status == 'confirmed' %} bg-success 
+                    {% elif rdv.status == 'canceled' %} bg-danger 
+                    {% elif rdv.status == 'rescheduled' %} bg-info text-dark 
+                    {% else %} bg-secondary {% endif %}">
+                    {{ rdv.status|capfirst }}
+                  </span>
+                </p>
+              </div>
+
+              {% if rdv.status != 'canceled' %}
+                <div class="d-flex gap-2">
+                  <!-- 📝 Modifier le rendez-vous -->
+                  <a href="{% url 'rendezvous:modifier_rendezvous' rdv.id %}" 
+                     class="btn btn-outline-warning btn-sm rounded-pill px-3">
+                    📝 Modifier
+                  </a>
+
+                  <!-- ❌ Annuler le rendez-vous -->
+                  <form method="post" action="{% url 'rendezvous:cancel_rdv' rdv.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                      ❌ Annuler
+                    </button>
+                  </form>
+                </div>
+              {% endif %}
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-center py-5">
+          <h5 class="text-muted">Aucun rendez-vous pour le moment.</h5>
+          <a href="{% url 'rendezvous:calendrier' %}" class="btn btn-custom mt-3">📅 Prendre un rendez-vous</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

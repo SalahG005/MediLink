@@ -1,0 +1,86 @@
+{% extends 'dossiers/base.html' %}
+
+{% block title %}Gestion des Médecins{% endblock %}
+
+{% block content %}
+<h2>Gestion des Médecins</h2>
+
+<form method="get" class="mb-4">
+    <div class="row">
+        <div class="col-md-6">
+            <input type="text" name="search" class="form-control" placeholder="Rechercher..." value="{{ search_query }}">
+        </div>
+        <div class="col-md-4">
+            <select name="statut" class="form-select">
+                <option value="">Tous les statuts</option>
+                {% for value, label in statut_choices %}
+                    <option value="{{ value }}" {% if statut_filter == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100" type="submit">Filtrer</button>
+        </div>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Spécialité</th>
+            <th>Numéro d'ordre</th>
+            <th>Statut</th>
+            <th>Date d'inscription</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for medecin in medecins %}
+        <tr>
+            <td>{{ medecin.user.get_full_name|default:medecin.user.username }}</td>
+            <td>{{ medecin.specialite }}</td>
+            <td>{{ medecin.numero_ordre }}</td>
+            <td>
+                <span class="badge bg-{% if medecin.statut == 'valide' %}success{% elif medecin.statut == 'refuse' %}danger{% else %}warning{% endif %}">
+                    {{ medecin.get_statut_display }}
+                </span>
+            </td>
+            <td>{{ medecin.date_inscription|date:"d/m/Y" }}</td>
+            <td class="d-flex gap-2">
+                <a href="{% url 'gestion_medecins:detail_medecin' medecin.id %}" class="btn btn-sm btn-info">Détails</a>
+                {% if medecin.statut == 'en_attente' %}
+                    <form method="post" action="{% url 'gestion_medecins:valider_medecin' medecin.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-success">Valider</button>
+                    </form>
+                    <form method="post" action="{% url 'gestion_medecins:refuser_medecin' medecin.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger">Refuser</button>
+                    </form>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="text-center">Aucun médecin trouvé.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if medecins.has_other_pages %}
+<nav>
+    <ul class="pagination">
+        {% if medecins.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ medecins.previous_page_number }}">Précédent</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ medecins.number }} / {{ medecins.paginator.num_pages }}</span></li>
+        {% if medecins.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ medecins.next_page_number }}">Suivant</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+

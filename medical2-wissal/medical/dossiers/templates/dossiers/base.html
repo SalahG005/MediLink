@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MediLink{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home' %}">MediLink</a>
+            <div class="navbar-nav ms-auto">
+                {% if request.user.is_authenticated %}
+                    {% if request.user.role == 'admin' %}
+                        <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                    {% else %}
+                        <a class="nav-link" href="{% url 'dossiers:liste_dossiers' %}">Dossiers</a>
+                        <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
+                        <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                    {% endif %}
+                    <a class="nav-link" href="{% url 'logout' %}">Se déconnecter</a>
+                {% else %}
+                    <a class="nav-link" href="{% url 'signin' %}">Connexion</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

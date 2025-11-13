@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+
+{% block title %}Message{% endblock %}
+
+{% block content %}
+<div class="alert alert-success mt-4">
+    <h4>✅ Rendez-vous confirmé avec succès !</h4>
+    <p>Merci d’avoir réservé votre créneau.</p>
+    <a href="{% url 'rendezvous:calendrier' %}" class="btn btn-primary mt-3">↩️ Retour au calendrier</a>
+</div>
+{% endblock %}
