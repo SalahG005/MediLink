@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from specialite.models import Specialite
 
 
 class Medecin(models.Model):
@@ -22,7 +23,14 @@ class Medecin(models.Model):
         null=True,
         blank=True
     )
-    specialite = models.CharField(max_length=100, verbose_name="Spécialité", blank=True)
+
+    specialite = models.ForeignKey(
+    Specialite,
+    on_delete=models.SET_NULL,  # si la spécialité est supprimée
+    null=True,
+    blank=True,
+    verbose_name="Spécialité"
+)   
     telephone = models.CharField(max_length=20, verbose_name="Téléphone", blank=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default='en_attente', verbose_name="Statut")
     date_inscription = models.DateTimeField(auto_now_add=True, verbose_name="Date d'inscription")

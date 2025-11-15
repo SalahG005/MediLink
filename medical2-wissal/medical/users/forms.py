@@ -1,6 +1,5 @@
 from django import forms
 from .models import User
-from specialite.models import Specialite
 
 class PatientSignUpForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput)
@@ -16,11 +15,7 @@ class PatientSignUpForm(forms.ModelForm):
                   'phone', 'date_of_birth', 'gouvernorat', 'ville']
       
 
-    specialite = forms.ModelChoiceField(
-        queryset=Specialite.objects.all(),
-        empty_label="Choisissez une spécialité",
-        required=True
-)
+ 
     def clean(self):
         cleaned_data = super().clean()
         password = cleaned_data.get('password')
@@ -75,5 +70,4 @@ class LoginForm(forms.Form):
 class PatientUpdateForm(forms.ModelForm):
     class Meta:
         model = User
-        # Ici, les champs que le patient peut mettre à jour
         fields = ['first_name', 'last_name', 'email', 'phone', 'date_of_birth', 'gouvernorat', 'ville']
