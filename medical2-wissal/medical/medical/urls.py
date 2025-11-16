@@ -24,6 +24,7 @@ urlpatterns = [
     path('dossiers/', include('dossiers.urls')),
     path('medecins/', include('gestion_medecins.urls')),
     path('rendezvous/', include('rendezvous.urls')),
+    path('disponibilite/', include('disponibilite.urls')),
 ]
 
 # Sert les fichiers media (PDF, images, etc.) en développement

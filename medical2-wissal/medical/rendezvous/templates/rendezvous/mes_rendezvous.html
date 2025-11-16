@@ -4,60 +4,172 @@
 {% block title %}Mes Rendez-vous{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-  <div class="card shadow-lg border-0 rounded-4">
-    <div class="card-body p-4">
-      <h2 class="mb-4 text-center fw-bold text-primary">
-        📋 Mes Rendez-vous
-      </h2>
+<style>
+.container-full {
+    width: 100%;
+    padding: 40px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}
 
-      {% if mes_rdv %}
-        <div class="list-group">
-          {% for rdv in mes_rdv %}
-            <div class="list-group-item d-flex justify-content-between align-items-center mb-3 shadow-sm rounded-3 p-3">
-              <div>
-                <h5 class="mb-1 text-dark">
-                  🕒 {{ rdv.slot.date|date:"d M Y à H:i" }}
-                </h5>
-                <p class="mb-0">
-                  <span class="badge 
-                    {% if rdv.status == 'pending' %} bg-warning text-dark 
-                    {% elif rdv.status == 'confirmed' %} bg-success 
-                    {% elif rdv.status == 'canceled' %} bg-danger 
-                    {% elif rdv.status == 'rescheduled' %} bg-info text-dark 
-                    {% else %} bg-secondary {% endif %}">
-                    {{ rdv.status|capfirst }}
-                  </span>
-                </p>
-              </div>
+.custom-card {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    max-width: 900px;
+    width: 100%;
+}
 
-              {% if rdv.status != 'canceled' %}
-                <div class="d-flex gap-2">
-                  <!-- 📝 Modifier le rendez-vous -->
-                  <a href="{% url 'rendezvous:modifier_rendezvous' rdv.id %}" 
-                     class="btn btn-outline-warning btn-sm rounded-pill px-3">
-                    📝 Modifier
-                  </a>
+h2 {
+    text-align: center;
+    color: #1b1c74;
+    margin-bottom: 25px;
+}
 
-                  <!-- ❌ Annuler le rendez-vous -->
-                  <form method="post" action="{% url 'rendezvous:cancel_rdv' rdv.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                      ❌ Annuler
-                    </button>
-                  </form>
-                </div>
-              {% endif %}
+.list-group-item {
+    border: none;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.list-group-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.badge {
+    font-weight: 600;
+    font-size: 0.9rem;
+    padding: 0.5em 0.75em;
+    border-radius: 12px;
+}
+
+/* Boutons neutres */
+.btn-outline {
+    border-radius: 50px;
+    padding: 8px 20px;
+    font-weight: 600;
+    color: #1b1c74;
+    border: 1px solid #1b1c74;
+    background: #f8f9ff;
+    transition: 0.3s;
+}
+
+.btn-outline:hover {
+    background: #e0e6ff;
+    color: #1b1c74;
+    transform: scale(1.05);
+}
+
+/* Bouton principal */
+.btn-custom {
+    background: linear-gradient(90deg, #1b1c74, #272894);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 35px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-custom:hover {
+    background: linear-gradient(90deg, #272894, #1b1c74);
+    transform: scale(1.05);
+}
+
+.d-flex.gap-2 {
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+@media (max-width: 768px) {
+    .custom-card {
+        padding: 25px;
+    }
+    .d-flex.gap-2 {
+        flex-direction: column;
+    }
+    
+      .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .navbar .nav-link {
+            color: #1b1c74;
+            font-weight: 500;
+        }
+        .navbar .nav-link:hover {
+            color: #272894;
+        }
+        .navbar .text-danger:hover {
+            color: #b30000;
+        }
+}
+</style>
+ <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'acceuil_patient' %}"></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'acceuil_patient' %}">Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'rendezvous:calendrier' %}">Calendrier</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'rendezvous:mes_rendezvous' %}">Mes Rendez-vous</a></li>
+                    <li class="nav-item"><a class="nav-link text-danger" href="{% url 'logout' %}">Déconnexion</a></li>
+                </ul>
             </div>
-          {% endfor %}
         </div>
-      {% else %}
-        <div class="text-center py-5">
-          <h5 class="text-muted">Aucun rendez-vous pour le moment.</h5>
-          <a href="{% url 'rendezvous:calendrier' %}" class="btn btn-custom mt-3">📅 Prendre un rendez-vous</a>
-        </div>
-      {% endif %}
+    </nav>
+
+<div class="container-full py-5">
+    <div class="custom-card">
+        <h2> Mes Rendez-vous</h2>
+
+        {% if mes_rdv %}
+            <div class="list-group">
+                {% for rdv in mes_rdv %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-1"> {{ rdv.slot.date|date:"d M Y à H:i" }}</h5>
+                            <span class="badge 
+                                {% if rdv.status == 'pending' %} bg-info text-dark
+                                {% elif rdv.status == 'confirmed' %} bg-success
+                                {% elif rdv.status == 'canceled' %} bg-secondary
+                                {% elif rdv.status == 'rescheduled' %} bg-primary text-light
+                                {% else %} bg-secondary {% endif %}">
+                                {{ rdv.status|capfirst }}
+                            </span>
+                        </div>
+
+                        {% if rdv.status != 'canceled' %}
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'rendezvous:modifier_rendezvous' rdv.id %}" class="btn btn-outline btn-sm"> Modifier</a>
+                            <form method="post" action="{% url 'rendezvous:cancel_rdv' rdv.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline btn-sm">❌ Annuler</button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <h5 class="text-muted">Aucun rendez-vous pour le moment.</h5>
+                <a href="{% url 'rendezvous:calendrier' %}" class="btn btn-custom mt-3">📅 Prendre un rendez-vous</a>
+            </div>
+        {% endif %}
     </div>
-  </div>
 </div>
 {% endblock %}

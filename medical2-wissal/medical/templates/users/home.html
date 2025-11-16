@@ -1,22 +1,60 @@
-<!-- templates/users/home.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Accueil</title>
-    {% load static %}
+    <title>Accueil - MediLink</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <div class="container" style="max-width: 600px; margin: 0 auto;">
-        <div class="custom-card">
-            <h1>Bienvenue sur la plateforme médicale</h1>
-            <p style="text-align:center;">Choisissez votre action :</p>
-            <div style="display:flex; flex-direction:column; gap:15px; align-items:center;">
-                <a class="btn-custom" href="{% url 'signup_patient' %}">Inscription Patient</a>
-                <a class="btn-custom" href="{% url 'signup_medecin' %}">Inscription Médecin</a>
-                <a class="btn-custom" href="{% url 'signin' %}">Connexion</a>
+    <div class="container-creative">
+        <!-- Formulaire gauche -->
+        <div class="left-col">
+            <div class="custom-card">
+                <h1>Bienvenue sur MediLink</h1>
+                <p style="text-align:center;">Veuillez vous connecter pour accéder à votre espace</p>
+
+                <form method="POST" action="{% url 'signin' %}">
+                    {% csrf_token %}
+                    
+                    {% if error %}
+                        <p class="alert">{{ error }}</p>
+                    {% endif %}
+
+                    <label>Email :</label>
+                    <input type="email" name="email" required>
+
+                    <label>Mot de passe :</label>
+                    <input type="password" name="password" required>
+
+                    <label>Je suis :</label>
+                    <div class="radio-group">
+                        <input type="radio" id="patient" name="role" value="patient" checked>
+                        <label for="patient">Patient</label>
+
+                        <input type="radio" id="medecin" name="role" value="medecin">
+                        <label for="medecin">Médecin</label>
+
+                        <input type="radio" id="admin" name="role" value="admin">
+                        <label for="admin">Administrateur</label>
+                    </div>
+
+                    <button type="submit" class="btn-custom" style="width:100%;">Se connecter</button>
+                </form>
+
+                <p class="or-text">Pas de compte ?</p>
+
+                <div class="signup-buttons">
+                    <a href="{% url 'signup_patient' %}" class="btn-patient btn-custom">S'inscrire en tant que Patient</a>
+                    <a href="{% url 'signup_medecin' %}" class="btn-medecin btn-custom">S'inscrire en tant que Médecin</a>
+                </div>
             </div>
+        </div>
+
+        <!-- Image droite -->
+        <div class="right-col">
+            <div class="diagonal-overlay"></div>
+            <img src="{% static 'images/medical.jpg' %}" alt="Medical" class="side-image">
         </div>
     </div>
 </body>

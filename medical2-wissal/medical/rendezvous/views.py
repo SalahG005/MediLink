@@ -9,6 +9,8 @@ def calendrier(request):
     # On récupère les créneaux disponibles (is_available = True)
     slots = TimeSlot.objects.all()
     return render(request, 'rendezvous/calendrier.html', {'slots': slots})
+    print(slots)  # ça doit afficher tous tes TimeSlot dans la console
+
 
 
 # 📅 RÉSERVER UN RENDEZ-VOUS

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'gestion_medecins',
     'specialite',
     'rendezvous',
+    'disponibilite',
 ]
 
 MIDDLEWARE = [
@@ -122,6 +123,7 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'medical' / 'static']
+
 
 import os
 

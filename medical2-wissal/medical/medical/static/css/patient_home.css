@@ -1,108 +1,57 @@
-/* ===== Patient Home Page Styles ===== */
-body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #f3f9ff, #e0f0ff);
-    min-height: 100vh;
-    margin: 0;
-    padding-top: 70px;
-}
-
-/* Container et carte */
-.container {
-    max-width: 600px;
+/* ===== Container Large ===== */
+.container-full {
+    max-width: 900px;
     margin: 50px auto;
+    padding: 20px;
 }
+
+/* ===== Custom Card Uniform ===== */
 .custom-card {
-    background-color: #fff;
-    border-radius: 1.5rem;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-    padding: 30px;
-    text-align: center;
-    transition: transform 0.2s ease-in-out;
-}
-.custom-card:hover {
-    transform: translateY(-5px);
+    background: #fff;
+    border-radius: 25px;
+    padding: 45px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
 }
 
-/* Boutons */
-.btn-custom {
-    background: linear-gradient(90deg, #00aaff, #007bff);
-    color: white;
-    border-radius: 50px;
-    padding: 12px 25px;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-    text-decoration: none;
-    display: inline-block;
-    margin-bottom: 15px;
-    transition: all 0.3s;
-}
-.btn-custom:hover {
-    background: linear-gradient(90deg, #007bff, #0056d2);
-    transform: scale(1.05);
-}
-
-/* Bouton Supprimer */
-.btn-delete {
-    background: linear-gradient(90deg, #ff4d4f, #d9363e);
-    color: white;
-    border-radius: 50px;
-    padding: 12px 25px;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 500;
-    width: 100%;
-    transition: all 0.3s;
-}
-.btn-delete:hover {
-    background: linear-gradient(90deg, #d9363e, #a32428);
-    transform: scale(1.05);
-}
-
-/* Actions group */
+/* ===== Action Buttons Layout ===== */
 .actions {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    margin-top: 20px;
+    margin-bottom: 25px;
 }
 
-/* Lien Retour à l'accueil */
-.back-home {
-    margin-top: 20px;
-}
-
-/* Headings */
-h1 {
-    color: #333;
-    margin-bottom: 20px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .custom-card {
-        padding: 20px;
-    }
-    .btn-custom, .btn-delete {
-        font-size: 0.9rem;
-        padding: 10px 20px;
-    }
-}
-.back-home a {
-    display: inline-block;
-    padding: 10px 20px;
-    border-radius: 50px;
-    background: linear-gradient(90deg, #6c757d, #495057);
+/* ===== Delete Button (rouge soft) ===== */
+.btn-delete {
+    background: #e63946;
     color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-delete:hover {
+    background: #c92a36;
+    transform: scale(1.05);
+}
+
+/* ===== Light Button for 'Retour' ===== */
+.btn-custom-light {
+    display: inline-block;
+    padding: 10px 25px;
+    border-radius: 50px;
+    border: 2px solid #1b1c74;
+    color: #1b1c74;
     text-decoration: none;
     font-weight: 500;
-    transition: all 0.3s;
+    transition: 0.3s;
 }
 
-.back-home a:hover {
-    background: linear-gradient(90deg, #495057, #343a40);
+.btn-custom-light:hover {
+    background: linear-gradient(90deg, #1b1c74, #272894);
+    color: #fff;
     transform: scale(1.05);
 }

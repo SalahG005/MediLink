@@ -3,49 +3,68 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Connexion</title>
+    <title>Connexion - MediLink</title>
     {% load static %}
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <div class="container" style="max-width: 500px; margin: 50px auto;">
-        <div class="custom-card">
-            <h1>Se connecter</h1>
+    <div class="container-creative">
 
-            {% if error %}
-                <p class="alert">{{ error }}</p>
-            {% endif %}
+        <!-- ===== Formulaire à gauche ===== -->
+        <div class="left-col">
+            <div class="custom-card">
+                <h1>Se connecter</h1>
 
-            <form method="POST">
-                {% csrf_token %}
+                {% if error %}
+                    <p class="alert">{{ error }}</p>
+                {% endif %}
 
-                <label>Email :</label>
-                <input type="email" name="email" required>
+                <form method="POST">
+                    {% csrf_token %}
 
-                <label>Mot de passe :</label>
-                <input type="password" name="password" required>
+                    <label>Email :</label>
+                    <input type="email" name="email" placeholder="Votre email" required>
 
-                <label>Je suis :</label>
-                <div class="radio-group">
-                    <input type="radio" id="patient" name="role" value="patient" checked>
-                    <label for="patient">Patient</label>
+                    <label>Mot de passe :</label>
+                    <input type="password" name="password" placeholder="Votre mot de passe" required>
 
-                    <input type="radio" id="medecin" name="role" value="medecin">
-                    <label for="medecin">Médecin</label>
+                   <label>Je suis :</label>
+<div class="radio-group">
+    <input type="radio" id="patient" name="role" value="patient" checked>
+    <label for="patient">Patient</label>
 
-                    <input type="radio" id="admin" name="role" value="admin">
-                    <label for="admin">Administrateur</label>
+    <input type="radio" id="medecin" name="role" value="medecin">
+    <label for="medecin">Médecin</label>
+
+    <input type="radio" id="admin" name="role" value="admin">
+    <label for="admin">Administrateur</label>
+</div>
+
+
+                    <div style="text-align:center; margin-top:20px;">
+                        <button type="submit" class="btn-custom">Se connecter</button>
+                    </div>
+                </form>
+
+                <p class="or-text">Pas de compte ?</p>
+
+                <div class="signup-buttons">
+                    <a href="{% url 'signup_patient' %}">S'inscrire en tant que Patient</a>
+                    <a href="{% url 'signup_medecin' %}">S'inscrire en tant que Médecin</a>
                 </div>
 
-                <div style="text-align:center; margin-top: 15px;">
-                    <button type="submit" class="btn-custom">Se connecter</button>
-                </div>
-            </form>
-
-            <p style="text-align:center; margin-top:15px;">
-                <a href="{% url 'home' %}" class="btn-custom" style="padding:8px 20px; font-size:0.95rem; background:#fff; color:#007bff; border:2px solid #007bff; border-radius:50px; transition:0.3s;">Retour à l'accueil</a>
-            </p>
+                <p style="text-align:center; margin-top:20px;">
+                    <a href="{% url 'home' %}" class="btn-custom" style="padding:8px 20px; font-size:0.95rem; background:#fff; color:#007bff; border:2px solid #007bff;">Retour à l'accueil</a>
+                </p>
+            </div>
         </div>
+
+        <!-- ===== Image à droite ===== -->
+        <div class="right-col">
+            <img src="{% static 'images/medical.jpg' %}" alt="Medical" class="side-image">
+            <div class="diagonal-overlay"></div>
+        </div>
+
     </div>
 </body>
 </html>
