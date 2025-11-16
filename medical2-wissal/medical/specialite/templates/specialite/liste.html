@@ -1,163 +1,233 @@
 {% extends 'base.html' %}
-{% block title %}Liste des spécialités{% endblock %}
+{% block title %}Spécialités{% endblock %}
 {% load static %}
 {% block content %}
+
 <style>
-/* Header color subtle blue gradient */
-.table-header-gradient th {
-  background: linear-gradient(90deg, #d7ecff 0%, #eef7ff 100%);
-  color: #023e8a; /* darker blue for header text */
-  font-weight: 600;
-  vertical-align: middle;
+
+/* Overall container */
+.specialites-wrapper {
+    max-width: 1200px;
+    margin: auto;
 }
 
-/* Icon buttons: simple, black, no extra border */
-.icon-btn {
-  background: transparent;
-  border: none;
-  padding: 6px 8px;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+/* Glass-card style */
+.table-card {
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(6px);
+    border-radius: 18px;
+    padding: 25px 30px;
+    box-shadow: 0 12px 35px rgba(0,0,0,0.1);
+    overflow: hidden;
 }
 
-/* Slight hover effect to indicate interactivity */
-.icon-btn:hover {
-  background: rgba(0,0,0,0.04);
-  border-radius: 6px;
+/* Page title */
+.page-title {
+    font-weight: 700;
+    color: #1b1c74;
+    margin-bottom: 25px;
 }
 
 /* Top action bar */
 .top-actions {
-  display:flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
 }
 
-/* Search input */
-#searchInput {
-  width: 250px;
-  padding: 5px 10px;
-  border-radius: 6px;
-  border: 1px solid #ced4da;
+/* Dashboard button */
+.btn-dashboard {
+    background: linear-gradient(90deg, #1b1c74, #272894);
+    color: white !important;
+    border-radius: 50px;
+    padding: 10px 20px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: 0.3s;
+}
+.btn-dashboard:hover {
+    transform: scale(1.05);
 }
 
-/* Table card */
-.table-card {
-  box-shadow: 0 6px 18px rgba(2,62,138,0.06);
-  border-radius: 8px;
-  overflow: hidden;
+/* Search */
+.search-box {
+    background: white;
+    border-radius: 50px;
+    padding: 8px 15px;
+    border: 1px solid #cdd4df;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
+.search-box input {
+    border: none;
+    width: 200px;
+    outline: none;
+    font-size: 0.9rem;
+}
+
+/* Add button */
+.btn-add {
+    background: white;
+    border-radius: 50px;
+    padding: 10px 20px;
+    border: 2px solid #1b1c74;
+    font-weight: 600;
+    color: #1b1c74;
+    transition: 0.2s;
+}
+.btn-add:hover {
+    background: #1b1c74;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Table header */
+.table-header-gradient th {
+    background: #f4f8ff;
+    color: #1b1c74;
+    font-weight: 600;
+    padding: 16px;
+}
+
+/* Table row */
+#specialitesTable td {
+    padding: 16px !important;
+    vertical-align: middle;
+    font-size: 0.95rem;
+}
+
+/* Hover row effect */
+#specialitesTable tbody tr:hover {
+    background: #f9fbff;
+}
+
+/* Icon buttons */
+.icon-btn {
+    background: transparent;
+    border: none;
+    padding: 6px;
+    cursor: pointer;
+    transition: 0.25s;
+}
+.icon-btn:hover {
+    background: rgba(0,0,0,0.07);
+    border-radius: 6px;
+    transform: scale(1.15);
+}
+
 </style>
 
-<div class="container mt-5 pt-4">
 
+<div class="specialites-wrapper mt-5 pt-4">
+
+    <!-- PAGE TITLE + DASHBOARD BUTTON -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="page-title">Spécialités Médicales</h2>
+        <a href="{% url 'acceuil_admin' %}" class="btn-dashboard">🏠 Retour Dashboard</a>
+    </div>
+
+    <!-- TOP ACTION BAR -->
     <div class="top-actions">
-        <!-- Left: delete selected -->
-        <form method="POST" id="deleteForm" action="{% url 'supprimer_specialites_selectionnees' %}">
+
+        <!-- Delete Selected -->
+        <form method="POST" action="{% url 'supprimer_specialites_selectionnees' %}">
             {% csrf_token %}
-            <button type="submit" class="btn-icon-pill icon-btn" title="Supprimer la sélection"
-                    onclick="return confirm('Voulez-vous vraiment supprimer toutes les spécialités sélectionnées ?');">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                  <path d="M10 11v6"></path>
-                  <path d="M14 11v6"></path>
-                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
+            <button type="submit" class="icon-btn" title="Supprimer la sélection"
+                onclick="return confirm('Supprimer les spécialités sélectionnées ?');">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                     fill="none" stroke="#1b1c74" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                    <path d="M10 11v6"></path>
+                    <path d="M14 11v6"></path>
+                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
                 </svg>
             </button>
         </form>
 
-        <!-- Right: search + add button -->
-        <div class="d-flex align-items-center gap-2">
-            <input type="text" id="searchInput" placeholder="Rechercher...">
-            <a href="{% url 'ajouter_specialite' %}" class="btn btn-outline-primary rounded-pill px-3 shadow-sm" title="Ajouter une spécialité">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#002e5b" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="margin-right:6px">
-                  <line x1="12" y1="5" x2="12" y2="19"></line>
-                  <line x1="5" y1="12" x2="19" y2="12"></line>
+        <!-- Search + Add -->
+        <div class="d-flex align-items-center gap-3">
+
+            <!-- Search -->
+            <div class="search-box">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                     fill="none" stroke="#1b1c74" stroke-width="1.6"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="8" cy="8" r="5"></circle>
+                    <line x1="13" y1="13" x2="16" y2="16"></line>
                 </svg>
-                Ajouter
+                <input type="text" id="searchInput" placeholder="Rechercher...">
+            </div>
+
+            <!-- Add -->
+            <a href="{% url 'ajouter_specialite' %}" class="btn-add">
+                + Ajouter
             </a>
         </div>
     </div>
 
-    {% if specialites %}
-    <div class="table-card">
-        <form method="POST" id="bulkForm" action="{% url 'supprimer_specialites_selectionnees' %}">
+    <!-- TABLE -->
+    <div class="table-card mt-3">
+        <form method="POST" action="{% url 'supprimer_specialites_selectionnees' %}">
             {% csrf_token %}
-            <table class="table table-hover table-borderless mb-0" id="specialitesTable">
+            
+            <table class="table table-hover mb-0" id="specialitesTable">
                 <thead class="table-header-gradient text-center">
                     <tr>
-                        <th style="width:48px">
-                            <input type="checkbox" id="select_all" onclick="toggleSelectAll(this)">
-                        </th>
-                        <th style="width:80px">ID</th>
+                        <th><input type="checkbox" id="select_all" onclick="toggleSelectAll(this)"></th>
+                        
                         <th>Nom</th>
                         <th>Description</th>
-                        <th style="width:110px">Actions</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody>
+
+                <tbody class="text-center">
                     {% for specialite in specialites %}
-                    <tr class="align-middle">
-                        <td class="text-center">
-                            <input type="checkbox" name="selected_ids" value="{{ specialite.id_specialite }}">
-                        </td>
-                        <td class="text-center fw-semibold">{{ specialite.id_specialite }}</td>
+                    <tr>
+                        <td class="fw-semibold">{{ specialite.id_specialite }}</td>
                         <td>{{ specialite.nom_specialite }}</td>
                         <td>{{ specialite.description|default:"—" }}</td>
-                        <td class="text-center">
-                            <a href="{% url 'modifier_specialite' specialite.id_specialite %}" class="icon-btn" title="Modifier">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                                  <path d="M12 20h9"></path>
-                                  <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"></path>
-                                </svg>
+
+                        <td>
+                            <!-- Edit -->
+                            <a href="{% url 'modifier_specialite' specialite.id_specialite %}" class="icon-btn">
+                                ✏️
                             </a>
-                            <a href="{% url 'supprimer_specialite' specialite.id_specialite %}" class="icon-btn" title="Supprimer"
-                               onclick="return confirm('Voulez-vous vraiment supprimer cette spécialité ?');">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                                  <polyline points="3 6 5 6 21 6"></polyline>
-                                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-                                  <path d="M10 11v6"></path>
-                                  <path d="M14 11v6"></path>
-                                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
-                                </svg>
+
+                            <!-- Delete -->
+                            <a href="{% url 'supprimer_specialite' specialite.id_specialite %}"
+                               class="icon-btn"
+                               onclick="return confirm('Supprimer cette spécialité ?');">
+                                🗑️
                             </a>
                         </td>
                     </tr>
                     {% endfor %}
                 </tbody>
+
             </table>
         </form>
     </div>
 
-    {% else %}
-    <div class="alert alert-info text-center shadow-sm mt-4">
-        Aucune spécialité trouvée. Cliquez sur <strong>Ajouter</strong> pour en créer une.
-    </div>
-    {% endif %}
 </div>
 
+
+<!-- JS Filtering + Select All -->
 <script>
 function toggleSelectAll(source) {
-    const checkboxes = document.getElementsByName('selected_ids');
-    for (let i = 0; i < checkboxes.length; i++) {
-        checkboxes[i].checked = source.checked;
-    }
+    document.querySelectorAll("input[name='selected_ids']").forEach(cb => cb.checked = source.checked);
 }
 
-// Recherche en temps réel
-document.getElementById('searchInput').addEventListener('keyup', function() {
-    const filter = this.value.toLowerCase();
-    const rows = document.querySelectorAll('#specialitesTable tbody tr');
-    rows.forEach(row => {
-        const text = row.innerText.toLowerCase();
-        row.style.display = text.includes(filter) ? '' : 'none';
+document.getElementById("searchInput").addEventListener("keyup", function(){
+    let filter = this.value.toLowerCase();
+    document.querySelectorAll("#specialitesTable tbody tr").forEach(row => {
+        row.style.display = row.innerText.toLowerCase().includes(filter) ? "" : "none";
     });
 });
 </script>
+
 {% endblock %}
