@@ -1,0 +1,32 @@
+{% extends 'dossiers/base.html' %}
+
+{% block title %}Détails Médecin{% endblock %}
+
+{% block content %}
+<h2>Détails du Médecin</h2>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <p><strong>Nom:</strong> {{ medecin.user.get_full_name|default:medecin.user.username }}</p>
+        <p><strong>Email:</strong> {{ medecin.user.email }}</p>
+        <p><strong>Spécialité:</strong> {{ medecin.specialite }}</p>
+        <p><strong>Numéro d'ordre:</strong> {{ medecin.numero_ordre }}</p>
+        <p><strong>Téléphone:</strong> {{ medecin.telephone|default:medecin.user.phone }}</p>
+        <p><strong>Statut du compte:</strong> {{ medecin.user.get_statut_display }}</p>
+        <p><strong>Statut:</strong> 
+            <span class="badge bg-{% if medecin.statut == 'valide' %}success{% elif medecin.statut == 'refuse' %}danger{% else %}warning{% endif %}">
+                {{ medecin.get_statut_display }}
+            </span>
+        </p>
+        <p><strong>Date d'inscription:</strong> {{ medecin.date_inscription|date:"d/m/Y H:i" }}</p>
+        {% if medecin.date_validation %}
+        <p><strong>Date de validation:</strong> {{ medecin.date_validation|date:"d/m/Y H:i" }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="mt-3">
+    <a href="{% url 'gestion_medecins:liste_medecins' %}" class="btn btn-secondary">Retour</a>
+</div>
+{% endblock %}
+

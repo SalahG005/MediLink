@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mettre à jour mes coordonnées</title>
+    <link rel="stylesheet" href="{% static 'css/signup_medecin.css' %}">
+</head>
+<body>
+    <div class="container-full">
+        <div class="custom-card">
+
+            <h1>Mettre à jour mes coordonnées</h1>
+
+            <form method="POST">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <div style="text-align:center; margin-top:20px;">
+                    <button type="submit" class="btn-custom">Enregistrer</button>
+                </div>
+            </form>
+
+            <p style="text-align:center; margin-top:15px;">
+                <a href="{% url 'acceuil_patient' %}">Retour à l'accueil</a>
+            </p>
+
+        </div>
+    </div>
+</body>
+</html>

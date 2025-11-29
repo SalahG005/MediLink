@@ -1,0 +1,57 @@
+/* ===== Container Large ===== */
+.container-full {
+    max-width: 900px;
+    margin: 50px auto;
+    padding: 20px;
+}
+
+/* ===== Custom Card Uniform ===== */
+.custom-card {
+    background: #fff;
+    border-radius: 25px;
+    padding: 45px;
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+
+/* ===== Action Buttons Layout ===== */
+.actions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+/* ===== Delete Button (rouge soft) ===== */
+.btn-delete {
+    background: #e63946;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-delete:hover {
+    background: #c92a36;
+    transform: scale(1.05);
+}
+
+/* ===== Light Button for 'Retour' ===== */
+.btn-custom-light {
+    display: inline-block;
+    padding: 10px 25px;
+    border-radius: 50px;
+    border: 2px solid #1b1c74;
+    color: #1b1c74;
+    text-decoration: none;
+    font-weight: 500;
+    transition: 0.3s;
+}
+
+.btn-custom-light:hover {
+    background: linear-gradient(90deg, #1b1c74, #272894);
+    color: #fff;
+    transform: scale(1.05);
+}
