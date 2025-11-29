@@ -180,6 +180,7 @@ from specialite.models import Specialite
 
 @login_required
 def liste_medecins(request):
+    """Liste uniquement les médecins validés + recherche + pagination avec filtres avancés"""
 
     medecins = Medecin.objects.filter(
         statut='valide'
@@ -242,11 +243,9 @@ def liste_medecins(request):
     context = {
         'medecins': page_obj,
         'search_query': search_query,
-
         'specialite_filter': specialite_filter,
         'gouvernorat_filter': gouvernorat_filter,
         'ville_filter': ville_filter,
-
         'specialites': Specialite.objects.all(),
         'gouvernorats': gouvernorats,
         'villes': villes,

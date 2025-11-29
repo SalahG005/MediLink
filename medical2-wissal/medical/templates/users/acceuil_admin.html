@@ -49,6 +49,52 @@
         }
 
         h1, h2 { font-weight: 600; color: #1b1c74; }
+
+        .admin-btn {
+            display: inline-block;
+            padding: 14px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin: 10px;
+            transition: 0.3s ease;
+        }
+        .admin-btn:hover { transform: scale(1.05); }
+
+        .btn-main {
+            background: linear-gradient(90deg, #1b1c74, #272894);
+            color: white;
+        }
+        .btn-secondary {
+            background: white;
+            border: 2px solid #1b1c74;
+            color: #1b1c74;
+        }
+
+        .patients-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: hidden;
+            border-radius: 15px;
+            background: white;
+            margin-top: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .patients-table th {
+            background: #f3f9ff;
+            padding: 14px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .patients-table td {
+            padding: 14px;
+            border-bottom: 1px solid #eee;
+            text-align: center;
+        }
+
+        footer { margin-top: 40px; text-align: center; color: #777; }
     </style>
 </head>
 
@@ -56,15 +102,12 @@
 
 <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
-
         <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav align-items-center">
-
-                <!-- Statistiques ajouté pour garder ta version -->
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'dashboard_admin' %}">Statistiques</a>
                 </li>
