@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rendez-vous Patients</title>
+</head>
+<body>
+    <h1>Liste des rendez-vous</h1>
+
+    <table border="1">
+        <tr>
+            <th>Patient</th>
+            <th>Date / Heure</th>
+            <th>Statut</th>
+            <th>Actions</th>
+        </tr>
+        {% for rdv in rdvs %}
+        <tr>
+            <td>{{ rdv.patient.username }}</td>
+            <td>{{ rdv.slot.date|date:"Y-m-d H:i" }}</td>
+            <td>{{ rdv.status }}</td>
+            <td>
+                <a href="{% url 'rendezvous:medecin_detail_rdv' rdv.id %}">Voir Détails</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <p><a href="{% url 'rendezvous:calendrier' %}">Retour accueil</a></p>
+</body>
+</html>

@@ -1,0 +1,88 @@
+/* ===== Full Width Container ===== */
+.container-full {
+    width: 100%;
+    padding: 40px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}
+
+/* ===== Card Large ===== */
+.custom-card {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    max-width: 900px;      /* GRAND FORMULAIRE */
+    width: 100%;
+}
+
+/* ===== Title ===== */
+h1 {
+    text-align: center;
+    color: #1b1c74;
+    margin-bottom: 25px;
+    font-size: 2rem;
+}
+
+/* ===== Form Styling ===== */
+form p {
+    margin-bottom: 15px;
+}
+
+form label {
+    font-weight: 600;
+    color: #1b1c74;
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form input[type="date"],
+form input[type="file"],
+form select,
+textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    margin-top: 5px;
+    font-size: 1rem;
+    background: #f8f9ff; /* léger bleu clair */
+}
+
+/* ===== Button Styling ===== */
+.btn-custom {
+    background: linear-gradient(90deg, #1b1c74, #272894);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 35px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-custom:hover {
+    background: linear-gradient(90deg, #272894, #1b1c74);
+    transform: scale(1.05);
+}
+
+/* ===== Links ===== */
+a {
+    color: #1b1c74;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .custom-card {
+        padding: 25px;
+    }
+}

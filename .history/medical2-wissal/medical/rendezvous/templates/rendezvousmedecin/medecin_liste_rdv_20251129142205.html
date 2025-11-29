@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Rendez-vous - Médecin</title>
+    <!-- Bootstrap CSS (si tu l'utilises) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 70px;
+        }
+        .alert {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            z-index: 9999;
+            display: none;
+        }
+            <styl>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f3f9ff, #e0f0ff);
+            min-height: 100vh;
+            padding-top: 70px;
+            color: #1b1c74;
+        }
+
+        /* Navbar style similaire à ton ancien Accueil Patient */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .navbar .nav-link {
+            color: #1b1c74;
+            font-weight: 500;
+        }
+        .navbar .nav-link:hover {
+            color: #272894;
+        }
+        .navbar .text-danger:hover {
+            color: #b30000;
+        }
+    </style>
+</head>
+    
+
+<body>
+    <!-- Navbar commune -->
+    <nav class="navbar navbar-expand-lg fixed-top navbar-light bg-light shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'signin' %}">🏥 MediLink</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    {% if request.user.is_authenticated %}
+                        {% if request.user.role == 'admin' %}
+                            <a class="nav-link" href="{% url 'acceuil_admin' %}">Dashboard</a>
+                            <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                            <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
+                        {% else %}
+                            <a class="nav-link" href="{% url 'dossiers:liste_dossiers' %}">Dossiers</a>
+                            <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
+                            <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                            <a class="nav-link" href="{% url 'disponibilite:calendar' %}">Disponibilité</a>
+                            <a class="nav-link" href="{% url 'rendezvous:medecin_liste_rdv' %}">Rendez-vous</a>
+                        {% endif %}
+                        <a class="nav-link text-danger" href="{% url 'signin' %}">Se déconnecter</a>
+                    {% else %}
+                        <a class="nav-link" href="{% url 'signin' %}">Connexion</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h1 class="mb-4">Liste des rendez-vous</h1>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Patient</th>
+                    <th>Date / Heure</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for rdv in rdvs %}
+                <tr id="rdv-{{ rdv.id }}">
+                    <td>{{ rdv.patient.get_full_name }}</td>
+                    <td>{{ rdv.slot.date|date:"Y-m-d H:i" }}</td>
+                    <td id="status-{{ rdv.id }}">{{ rdv.status }}</td>
+                    <td>
+                        <button class="btn btn-success btn-sm" onclick="validerRdv({{ rdv.id }})">Valider</button>
+                        <button class="btn btn-warning btn-sm" onclick="reporterRdv({{ rdv.id }})">Reporter</button>
+                        <button class="btn btn-danger btn-sm" onclick="annulerRdv({{ rdv.id }})">Annuler</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">Aucun rendez-vous.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Alert JS -->
+    <div id="alert" class="alert alert-success"></div>
+
+    <!-- Bootstrap JS + dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JQuery (optionnel, pratique pour AJAX) -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <script>
+        function showAlert(message, type='success') {
+            const alertBox = document.getElementById('alert');
+            alertBox.className = `alert alert-${type}`;
+            alertBox.textContent = message;
+            alertBox.style.display = 'block';
+            setTimeout(() => { alertBox.style.display = 'none'; }, 3000);
+        }
+
+        function updateStatus(rdvId, newStatus) {
+            document.getElementById(`status-${rdvId}`).textContent = newStatus;
+            // Masquer les boutons
+            const row = document.getElementById(`rdv-${rdvId}`);
+            row.querySelectorAll('button').forEach(btn => btn.style.display = 'none');
+        }
+
+        function validerRdv(rdvId) {
+            fetch(`/rendezvous/medecin/valider/${rdvId}/`)
+            .then(response => {
+                if (response.ok) {
+                    updateStatus(rdvId, 'confirmed');
+                    showAlert('✅ Rendez-vous confirmé et patient notifié.');
+                }
+            });
+        }
+
+        function annulerRdv(rdvId) {
+            fetch(`/rendezvous/medecin/annuler/${rdvId}/`)
+            .then(response => {
+                if (response.ok) {
+                    updateStatus(rdvId, 'canceled');
+                    showAlert('✅ Rendez-vous annulé et patient notifié.', 'danger');
+                }
+            });
+        }
+
+        function reporterRdv(rdvId) {
+            // Redirection vers page de report
+            window.location.href = `/rendezvous/medecin/reporter/${rdvId}/`;
+        }
+    </script>
+</body>
+</html>

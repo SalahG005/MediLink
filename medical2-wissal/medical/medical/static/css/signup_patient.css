@@ -1,0 +1,103 @@
+/* ===== Style global ===== */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #e0fff5, #ccf6ed);
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== Container ===== */
+.container {
+    width: 100%;
+    max-width: 500px;
+    margin: 30px auto;
+}
+
+/* ===== Card ===== */
+.custom-card {
+    background: #fff;
+    padding: 35px;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0, 150, 136, 0.1);
+    text-align: center;
+}
+
+/* ===== Heading ===== */
+h1 {
+    color: #00796b;
+    margin-bottom: 25px;
+}
+
+/* ===== Form Inputs ===== */
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form input[type="date"],
+form input[type="file"],
+form select {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0 18px 0;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+    transition: 0.3s;
+}
+
+form input:focus {
+    border-color: #00bfa3;
+    box-shadow: 0 0 5px rgba(0, 191, 163, 0.3);
+    outline: none;
+}
+
+/* ===== Button Patient ===== */
+.btn-patient {
+    background: linear-gradient(90deg, #00d4aa, #00bfa3);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 12px 30px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-patient:hover {
+    background: linear-gradient(90deg, #00bfa3, #009e8c);
+    transform: scale(1.05);
+}
+
+/* ===== Back Home Link ===== */
+.back-home {
+    margin-top: 20px;
+}
+
+.back-home a {
+    display: inline-block;
+    padding: 10px 25px;
+    border-radius: 50px;
+    background: linear-gradient(90deg, #6c757d, #495057);
+    color: white;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.back-home a:hover {
+    background: linear-gradient(90deg, #495057, #343a40);
+    transform: scale(1.05);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+    .custom-card {
+        padding: 25px;
+    }
+    h1 {
+        font-size: 1.4rem;
+    }
+}

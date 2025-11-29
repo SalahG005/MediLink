@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rendez-vous Patients</title>
+    <style>
+        .alert {
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .alert-success { background-color: #d4edda; color: #155724; }
+        .alert-error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Liste des rendez-vous</h1>
+
+    <!-- Messages flash -->
+    {% if messages %}
+        <div class="messages">
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+        </div>
+    {% endif %}
+
+    <table border="1">
+        <tr>
+            <th>Patient</th>
+            <th>Date / Heure</th>
+            <th>Statut</th>
+            <th>Actions</th>
+        </tr>
+        {% for rdv in rdvs %}
+        <tr>
+            <td>{{ rdv.patient.get_full_name }}</td>
+            <td>{{ rdv.slot.date|date:"Y-m-d H:i" }}</td>
+            <td>{{ rdv.status }}</td>
+            <td>
+                <a href="{% url 'rendezvous:medecin_detail_rdv' rdv.id %}">Voir Détails</a> |
+                <a href="{% url 'rendezvous:medecin_valider_rdv' rdv.id %}">✅ Valider</a> |
+                <a href="{% url 'rendezvous:medecin_annuler_rdv' rdv.id %}">❌ Annuler</a> |
+                <a href="{% url 'rendezvous:medecin_reporter_rdv' rdv.id %}">🔄 Reporter</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <p><a href="{% url 'rendezvous:calendrier' %}">Retour accueil</a></p>
+</body>
+</html>

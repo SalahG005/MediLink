@@ -1,0 +1,54 @@
+{% extends 'dossiers/base.html' %}
+
+{% block title %}Dossier Médical - {{ dossier.patient }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Dossier Médical</h2>
+    <a href="{% url 'dossiers:modifier_dossier' dossier.id %}" class="btn btn-warning">Modifier</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header bg-primary text-white">
+        <h5>Informations Patient</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Nom:</strong> {{ dossier.patient.user.get_full_name|default:dossier.patient.user.email }}</p>
+        <p><strong>Date de naissance:</strong> {{ dossier.patient.date_naissance|date:"d/m/Y" }}</p>
+        <p><strong>Sexe:</strong> {{ dossier.patient.get_sexe_display|default:"-" }}</p>
+        <p><strong>Téléphone:</strong> {{ dossier.patient.telephone|default:dossier.patient.user.phone }}</p>
+        <p><strong>Email:</strong> {{ dossier.patient.user.email }}</p>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header bg-info text-white">
+        <h5>Informations Médicales</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Date de consultation:</strong> {{ dossier.date_consultation|date:"d/m/Y H:i" }}</p>
+        <p><strong>Médecin:</strong> {% if dossier.medecin %}{{ dossier.medecin.get_full_name|default:dossier.medecin.username }}{% else %}Non spécifié{% endif %}</p>
+        <p><strong>Motif de consultation:</strong></p>
+        <p>{{ dossier.motif_consultation }}</p>
+        <p><strong>Diagnostic:</strong></p>
+        <p>{{ dossier.diagnostic }}</p>
+        <p><strong>Traitement prescrit:</strong></p>
+        <p>{{ dossier.traitement }}</p>
+        {% if dossier.observations %}
+        <p><strong>Observations:</strong></p>
+        <p>{{ dossier.observations }}</p>
+        {% endif %}
+        {% if dossier.allergies %}
+        <p><strong>Allergies:</strong></p>
+        <p>{{ dossier.allergies }}</p>
+        {% endif %}
+        {% if dossier.antecedents %}
+        <p><strong>Antécédents:</strong></p>
+        <p>{{ dossier.antecedents }}</p>
+        {% endif %}
+    </div>
+</div>
+
+<a href="{% url 'dossiers:liste_dossiers' %}" class="btn btn-secondary">Retour à la liste</a>
+{% endblock %}
+
