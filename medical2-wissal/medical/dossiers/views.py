@@ -98,6 +98,35 @@ def modifier_dossier(request, dossier_id):
 
 
 @login_required
+def liste_patients_med(request):
+    """Liste tous les patients"""
+    patients = Patient.objects.select_related('user').all()
+
+    search_query = request.GET.get('search', '')
+    if search_query:
+        patients = patients.filter(
+            nom__icontains=search_query
+        ) | patients.filter(
+            prenom__icontains=search_query
+        ) | patients.filter(
+            user__first_name__icontains=search_query
+        ) | patients.filter(
+            user__last_name__icontains=search_query
+        ) | patients.filter(
+            user__email__icontains=search_query
+        )
+
+    paginator = Paginator(patients, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'patients': page_obj,
+        'search_query': search_query,
+    }
+    return render(request, 'dossiers/liste_patients_med.html', context)
+
+@login_required
 def liste_patients(request):
     """Liste tous les patients"""
     patients = Patient.objects.select_related('user').all()

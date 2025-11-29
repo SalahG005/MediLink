@@ -9,6 +9,7 @@ urlpatterns = [
     path('dossier/ajouter/', views.ajouter_dossier, name='ajouter_dossier'),
     path('dossier/<int:dossier_id>/modifier/', views.modifier_dossier, name='modifier_dossier'),
     path('patients/', views.liste_patients, name='liste_patients'),
+    path('patients/med', views.liste_patients_med, name='liste_patients_med'),
     path('patients/ajouter/', views.ajouter_patient, name='ajouter_patient'),
 ]
 

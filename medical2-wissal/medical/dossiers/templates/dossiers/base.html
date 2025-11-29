@@ -53,8 +53,7 @@
                             <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
                         {% else %}
                             <a class="nav-link" href="{% url 'dossiers:liste_dossiers' %}">Dossiers</a>
-                            <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
-                            <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                            <a class="nav-link" href="{% url 'dossiers:liste_patients_med' %}">Patients</a>
                             <a class="nav-link" href="{% url 'disponibilite:calendar' %}">Disponibilité</a>
                             <<a class="nav-link" href="{% url 'rendezvous:medecin_liste_rdv' %}">Rendez_vous</a>
 
