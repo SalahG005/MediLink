@@ -8,6 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from gestion_medecins.models import Medecin
 from specialite.models import Specialite
+from django.core.paginator import Paginator
+from django.db.models import Q
+
 
 # Page d'accueil
 def home(request):
@@ -172,3 +175,46 @@ def is_patient(self):
 @property
 def is_admin(self):
     return self.role == 'admin'
+
+from specialite.models import Specialite
+
+@login_required
+def liste_medecins(request):
+    """Liste uniquement les médecins validés + recherche + pagination"""
+
+    medecins = Medecin.objects.filter(statut='valide').select_related('user')
+
+    # Filtre par spécialité
+    specialite_filter = request.GET.get('specialite', '')
+    if specialite_filter:
+        medecins = medecins.filter(specialite__id_specialite=specialite_filter)
+
+
+    # Recherche
+    # Recherche avancée
+    search_query = request.GET.get('search', '')
+    if search_query:
+        medecins = medecins.filter(
+            Q(user__first_name__icontains=search_query) |
+            Q(user__last_name__icontains=search_query) |
+            Q(user__email__icontains=search_query) |
+            Q(telephone__icontains=search_query) |
+            Q(specialite__nom_specialite__icontains=search_query) |
+            Q(user__first_name__icontains=search_query.split()[0]) &
+            Q(user__last_name__icontains=" ".join(search_query.split()[1:]))
+        )
+
+
+    # Pagination
+    paginator = Paginator(medecins, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'medecins': page_obj,
+        'search_query': search_query,
+        'specialite_filter': specialite_filter,
+        'specialites': Specialite.objects.all(),  # <-- correct key
+    }
+
+    return render(request, 'liste_medecins.html', context)

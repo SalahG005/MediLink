@@ -79,9 +79,18 @@ footer { margin-top: 60px; padding: 20px; text-align: center; color: #777; font-
         <div class="custom-card text-start">
             <h1>Bonjour {{ user.first_name }} !</h1>
             <p>Bienvenue dans votre espace patient. Ici vous pouvez gérer vos informations personnelles.</p>
-            <a href="{% url 'update_patient' %}" class="btn-custom">Mettre à jour mes informations</a>
+
+            <a href="{% url 'update_patient' %}" class="btn-custom">
+                Mettre à jour mes informations
+            </a>
+
+            <!-- ⭐ NEW BUTTON ⭐ -->
+            <a href="{% url 'liste_medecins_patient' %}" class="btn-custom mt-3">
+                Voir les Médecins
+            </a>
         </div>
     </div>
+
     <div class="col-md-4">
         <div class="custom-card text-center">
             <h5 class="text-danger">Supprimer mon compte</h5>
@@ -130,10 +139,12 @@ function loadNotifications() {
     });
 }
 
-// Marquer toutes les notifications comme lues
+// Marquer toutes comme lues
 function markAllAsRead() {
-    fetch(`/rendezvous/notifications/mark_all_read/`, { method:'POST', headers:{'X-CSRFToken':'{{ csrf_token }}'} })
-    .then(() => loadNotifications());
+    fetch(`/rendezvous/notifications/mark_all_read/`, {
+        method:'POST',
+        headers:{'X-CSRFToken':'{{ csrf_token }}'}
+    }).then(() => loadNotifications());
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -141,9 +152,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(loadNotifications, 10000);
 
     const notifDropdown = document.getElementById('notifDropdown');
-    // Quand le dropdown s'ouvre
     notifDropdown.addEventListener('show.bs.dropdown', () => {
-        markAllAsRead(); // badge disparaît
+        markAllAsRead();
     });
 });
 </script>

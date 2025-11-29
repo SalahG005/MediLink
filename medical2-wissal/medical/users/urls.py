@@ -18,6 +18,7 @@ urlpatterns = [
     path('dashboard/patient/<int:pk>/supprimer/', views.supprimer_patient, name='supprimer_patient'),
     path('dashboard/patient/<int:pk>/reactiver/', views.reactiver_patient, name='reactiver_patient'),
     path('specialites/', include('specialite.urls')), # gestion spécialités
+    path('patient/liste_med/', views.liste_medecins, name='liste_medecins_patient'),
 
 
 ]
