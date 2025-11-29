@@ -15,6 +15,7 @@ class RendezVous(models.Model):
         ('pending', 'En attente'),   
         ('confirmed', 'Confirmé'),   
         ('canceled', 'Annulé'),      
+        ('rescheduled', 'Reporté'),
     ]
 
     # le patient qui a réservé le créneau
@@ -37,3 +38,13 @@ class RendezVous(models.Model):
 
     def __str__(self):
         return f"{self.patient.username} - {self.slot.date.strftime('%Y-%m-%d %H:%M')} ({self.status})"
+
+        
+class Notification(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Notif pour {self.user.username} — {self.message[:20]}..."

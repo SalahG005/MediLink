@@ -1,6 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import TimeSlot, RendezVous
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import TimeSlot, RendezVous, Notification
+from django.contrib import messages
+
 
 # 🗓️ PAGE PRINCIPALE DU CALENDRIER
 # Cette fonction affiche tous les créneaux disponibles dans le calendrier.
@@ -113,3 +118,152 @@ def modifier_rendezvous(request, rdv_id):
         'rdv': rdv,
         'available_slots': available_slots
     })
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import RendezVous, TimeSlot, Notification
+
+# 🔹 Annuler un rendez-vous
+@login_required
+def medecin_annuler_rdv(request, rdv_id):
+    if request.user.role != 'medecin':
+        return redirect('rendezvous:calendrier')
+
+    rdv = get_object_or_404(RendezVous, id=rdv_id)
+    rdv.status = 'canceled'
+    rdv.slot.is_available = True
+    rdv.slot.save()
+    rdv.save()
+
+    Notification.objects.create(
+        user=rdv.patient,
+        message=f"Votre rendez-vous du {rdv.slot.date.strftime('%Y-%m-%d %H:%M')} a été annulé par le médecin."
+    )
+
+    messages.success(request, "✅ Rendez-vous annulé et patient notifié.")
+    return redirect('rendezvous:medecin_liste_rdv')
+
+
+# 🔹 Valider un rendez-vous
+@login_required
+def medecin_valider_rdv(request, rdv_id):
+    if request.user.role != 'medecin':
+        return redirect('rendezvous:calendrier')
+
+    rdv = get_object_or_404(RendezVous, id=rdv_id)
+    rdv.status = 'confirmed'
+    rdv.save()
+
+    Notification.objects.create(
+        user=rdv.patient,
+        message=f"Votre rendez-vous du {rdv.slot.date.strftime('%Y-%m-%d %H:%M')} a été confirmé par le médecin."
+    )
+
+    messages.success(request, " Rendez-vous confirmé et patient notifié.")
+    return redirect('rendezvous:medecin_liste_rdv')
+
+@login_required
+def medecin_reporter_rdv(request, rdv_id):
+    rdv = get_object_or_404(RendezVous, id=rdv_id)
+
+    if request.method == 'POST':
+        new_slot_id = request.POST.get('new_slot_id')  # ← corrigé
+        new_slot = get_object_or_404(TimeSlot, id=new_slot_id)
+
+        # Vérifier que le créneau est disponible
+        if RendezVous.objects.filter(slot=new_slot).exists():
+            messages.error(request, "Ce créneau est déjà réservé.")
+            return redirect('rendezvous:medecin_liste_rdv')
+
+        # Libérer l'ancien slot
+        rdv.slot.is_available = True
+        rdv.slot.save()
+
+        # Assigner le nouveau slot
+        rdv.slot = new_slot
+        rdv.status = 'rescheduled'
+        rdv.save()
+
+        # Marquer le nouveau slot comme occupé
+        new_slot.is_available = False
+        new_slot.save()
+
+        messages.success(request, "Rendez-vous reporté avec succès.")
+        return redirect('rendezvous:medecin_liste_rdv')
+
+    # GET → afficher le formulaire avec slots disponibles
+    available_slots = TimeSlot.objects.filter(is_available=True)
+    return render(request, 'rendezvousmedecin/modifier_rdv_medecin.html', {
+        'rdv': rdv,
+        'available_slots': available_slots
+    })
+
+
+
+# 🔹 Liste des rendez-vous côté médecin
+@login_required
+def medecin_liste_rdv(request):
+    if request.user.role != 'medecin':
+        return redirect('rendezvous:calendrier')
+
+    rdvs = RendezVous.objects.all().order_by('slot__date')
+    return render(request, 'rendezvousmedecin/medecin_liste_rdv.html', {'rdvs': rdvs})
+
+
+# 🔹 Détails d'un rendez-vous côté médecin
+@login_required
+def medecin_detail_rdv(request, rdv_id):
+    if request.user.role != 'medecin':
+        return redirect('rendezvous:calendrier')
+
+    rdv = get_object_or_404(RendezVous, id=rdv_id)
+    return render(request, 'rendezvousmedecin/medecin_detail_rdv.html', {'rdv': rdv})
+
+
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from .models import Notification
+
+@login_required
+def get_notifications(request):
+    user = request.user
+    notifications = Notification.objects.filter(user=user).order_by('-created_at')
+    notif_list = []
+    for n in notifications:
+        notif_list.append({
+            'id': n.id,
+            'message': n.message,
+            'is_read': n.is_read,
+            'created_at': n.created_at.strftime('%Y-%m-%d %H:%M')
+        })
+    return JsonResponse({'notifications': notif_list})
+
+
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import Notification
+
+@login_required
+@csrf_exempt
+def mark_as_read(request, notif_id):
+    if request.method == "POST":
+        try:
+            notif = Notification.objects.get(id=notif_id, user=request.user)
+            notif.is_read = True
+            notif.save()
+            return JsonResponse({'success': True})
+        except Notification.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Notification not found'})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+# Fonction séparée, **pas indentée à l’intérieur de mark_as_read**
+@login_required
+@csrf_exempt
+def mark_all_read(request):
+    if request.method == "POST":
+        Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+        return JsonResponse({"status": "ok"})
+    return JsonResponse({'status': 'failed', 'error': 'Invalid request'})

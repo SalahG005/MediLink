@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import TimeSlot, RendezVous
+from .models import TimeSlot, RendezVous,Notification
 
 # Makes TimeSlot appear in admin dashboard
 @admin.register(TimeSlot)
@@ -14,3 +14,8 @@ class RendezVousAdmin(admin.ModelAdmin):
     list_display = ('patient', 'slot', 'status', 'booked_at')
     list_filter = ('status',)
     search_fields = ('patient__username',)
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'message', 'created_at', 'is_read')
+    list_filter = ('is_read', 'created_at')
+    search_fields = ('user__username', 'message')

@@ -56,6 +56,9 @@
                             <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
                             <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
                             <a class="nav-link" href="{% url 'disponibilite:calendar' %}">Disponibilité</a>
+                            <<a class="nav-link" href="{% url 'rendezvous:medecin_liste_rdv' %}">Rendez_vous</a>
+
+
                         {% endif %}
                         <a class="nav-link text-danger" href="{% url 'signin' %}">Se déconnecter</a>
                     {% else %}

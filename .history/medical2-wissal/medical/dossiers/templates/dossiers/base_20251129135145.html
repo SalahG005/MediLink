@@ -1,0 +1,82 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MediLink{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/style.css' %}" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f3f9ff, #e0f0ff);
+            min-height: 100vh;
+            padding-top: 70px;
+            color: #1b1c74;
+        }
+
+        /* Navbar style similaire à ton ancien Accueil Patient */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .navbar .nav-link {
+            color: #1b1c74;
+            font-weight: 500;
+        }
+        .navbar .nav-link:hover {
+            color: #272894;
+        }
+        .navbar .text-danger:hover {
+            color: #b30000;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar commune -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'signin' %}">🏥 MediLink</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    {% if request.user.is_authenticated %}
+                        {% if request.user.role == 'admin' %}
+                            <a class="nav-link" href="{% url 'acceuil_admin' %}">Dashboard</a>
+                            <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                            <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
+                        {% else %}
+                            <a class="nav-link" href="{% url 'dossiers:liste_dossiers' %}">Dossiers</a>
+                            <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
+                            <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                            <a class="nav-link" href="{% url 'disponibilite:calendar' %}">Disponibilité</a>
+                            <a class="nav-link" href="{% url 'rendezvousmedecin:medecin_liste_rdv %}">Disponibilité</a>
+                        {% endif %}
+                        <a class="nav-link text-danger" href="{% url 'signin' %}">Se déconnecter</a>
+                    {% else %}
+                        <a class="nav-link" href="{% url 'signin' %}">Connexion</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenu principal -->
+    <div class="container mt-5 pt-4">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer commun -->
+    <footer class="text-center mt-5 mb-3 text-muted">
+        © 2025 MediLink — Tous droits réservés
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -162,3 +162,13 @@ def reactiver_patient(request, pk):
         patient.save()
     return redirect('acceuil_admin')
 
+@property
+def is_medecin(self):
+    return self.role == 'medecin'
+@property
+def is_patient(self):
+    return self.role == 'patient'
+
+@property
+def is_admin(self):
+    return self.role == 'admin'

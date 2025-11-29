@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Détail Rendez-vous</title>
+</head>
+<body>
+    <h1>Détails du rendez-vous</h1>
+
+    <p><strong>Patient :</strong> {{ rdv.patient.username }}</p>
+    <p><strong>Date / Heure :</strong> {{ rdv.slot.date|date:"Y-m-d H:i" }}</p>
+    <p><strong>Statut :</strong> {{ rdv.status }}</p>
+    <p><strong>Motif :</strong> {{ rdv.motif|default:"-" }}</p>
+
+    <h2>Actions</h2>
+    <p>
+        <a href="{% url 'rendezvous:medecin_valider_rdv' rdv.id %}">✅ Valider</a> |
+        <a href="{% url 'rendezvous:medecin_annuler_rdv' rdv.id %}">❌ Annuler</a> |
+        <a href="{% url 'rendezvous:medecin_reporter_rdv' rdv.id %}">🕒 Reporter</a>
+    </p>
+
+    <p><a href="{% url 'rendezvous:medecin_liste_rdv' %}">Retour à la liste</a></p>
+</body>
+</html>
