@@ -31,23 +31,17 @@
             color: #1b1c74;
             font-weight: 500;
         }
-
-        .navbar .nav-link:hover {
-            color: #272894;
-        }
-
-        .navbar .text-danger:hover {
-            color: #b30000;
-        }
+        .navbar .nav-link:hover { color: #272894; }
+        .navbar .text-danger:hover { color: #b30000; }
 
         .custom-card {
             width: 100%;
-            max-width: 1200px;
+            max-width: 1300px;
             margin: auto;
             background: white;
             border-radius: 1.5rem;
             padding: 40px;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
         }
 
         .table-style {
@@ -56,7 +50,7 @@
             border-radius: 12px;
             overflow: hidden;
             background: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
         }
 
         .table-style th {
@@ -77,14 +71,14 @@
             background: #fff;
             padding: 20px;
             border-radius: 12px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.06);
         }
     </style>
 </head>
 
 <body>
 
-<!-- ⭐ NAVBAR ⭐ -->
+<!-- ⭐ NAVBAR IDENTIQUE À ACCEUIL_PATIENT ⭐ -->
 <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
         <a class="navbar-brand fw-bold text-primary" href="{% url 'acceuil_patient' %}">🏥 MediLink</a>
@@ -104,39 +98,55 @@
     </div>
 </nav>
 
-<!-- ⭐ PAGE CONTENT ⭐ -->
 
+<!-- ⭐ PAGE CONTENT ⭐ -->
 <div class="custom-card mt-4">
 
     <h2 class="mb-4 text-center">Liste des Médecins</h2>
 
     <!-- FILTERS -->
     <div class="filter-box mb-4">
-        <form method="get">
-            <div class="row g-3">
+        <div class="row g-3">
 
-                <!-- LIVE SEARCH -->
-                <div class="col-md-6">
-                    <input type="text" id="searchInput" class="form-control"
-                           placeholder="Rechercher..." value="{{ search_query }}">
-                </div>
-
-                <!-- SPECIALITE DROPDOWN (NOW WIDER) -->
-                <div class="col-md-6">
-                    <select name="specialite" id="specialiteSelect" class="form-select">
-                        <option value="">Toutes les spécialités</option>
-                        {% for s in specialites %}
-                        <option value="{{ s.id_specialite }}"
-                            {% if specialite_filter == s.id_specialite|stringformat:'s' %}selected{% endif %}>
-                            {{ s.nom_specialite }}
-                        </option>
-                        {% endfor %}
-                    </select>
-                </div>
-
+            <!-- SEARCH -->
+            <div class="col-md-4">
+                <input type="text" id="searchInput" class="form-control"
+                       placeholder="Rechercher...">
             </div>
-        </form>
+
+            <!-- SPECIALITE -->
+            <div class="col-md-3">
+                <select id="specialiteSelect" class="form-select">
+                    <option value="">Toutes les spécialités</option>
+                    {% for s in specialites %}
+                    <option value="{{ s.id_specialite }}">{{ s.nom_specialite }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- GOUVERNORAT -->
+            <div class="col-md-3">
+                <select id="gouvernoratSelect" class="form-select">
+                    <option value="">Tous les gouvernorats</option>
+                    {% for g in gouvernorats %}
+                    <option value="{{ g }}">{{ g }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- VILLE -->
+            <div class="col-md-2">
+                <select id="villeSelect" class="form-select">
+                    <option value="">Toutes les villes</option>
+                    {% for v in villes %}
+                    <option value="{{ v }}">{{ v }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+        </div>
     </div>
+
 
     <!-- TABLE -->
     <table class="table-style">
@@ -145,6 +155,8 @@
                 <th>Nom</th>
                 <th>Numéro d'ordre</th>
                 <th>Spécialité</th>
+                <th>Gouvernorat</th>
+                <th>Ville</th>
                 <th>Téléphone</th>
                 <th>Email</th>
             </tr>
@@ -152,16 +164,23 @@
 
         <tbody id="medecinTable">
             {% for medecin in medecins %}
-            <tr data-specialite="{{ medecin.specialite.id_specialite }}">
+            <tr 
+                data-specialite="{{ medecin.specialite.id_specialite }}"
+                data-gouv="{{ medecin.user.gouvernorat }}"
+                data-ville="{{ medecin.user.ville }}"
+            >
                 <td>{{ medecin.user.get_full_name }}</td>
                 <td>{{ medecin.numero_ordre|default:"-" }}</td>
                 <td>{{ medecin.specialite|default:"-" }}</td>
+                <td>{{ medecin.user.gouvernorat }}</td>
+                <td>{{ medecin.user.ville }}</td>
                 <td>{{ medecin.telephone|default:"-" }}</td>
                 <td>{{ medecin.user.email }}</td>
             </tr>
+
             {% empty %}
             <tr>
-                <td colspan="5" class="text-center">Aucun médecin trouvé.</td>
+                <td colspan="7" class="text-center">Aucun médecin trouvé.</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -173,38 +192,42 @@
 <!-- ⭐ LIVE FILTER SCRIPT ⭐ -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
+    const rows = document.querySelectorAll("#medecinTable tr");
+
     const searchInput = document.getElementById("searchInput");
     const specialiteSelect = document.getElementById("specialiteSelect");
-    const rows = document.querySelectorAll("#medecinTable tr");
+    const gouvernoratSelect = document.getElementById("gouvernoratSelect");
+    const villeSelect = document.getElementById("villeSelect");
 
     function filterRows() {
         const search = searchInput.value.toLowerCase();
-        const selectedSpecialite = specialiteSelect.value;
+        const spec = specialiteSelect.value;
+        const gouv = gouvernoratSelect.value;
+        const ville = villeSelect.value;
 
         rows.forEach(row => {
-            const nom = row.children[0].innerText.toLowerCase();
-            const ordre = row.children[1].innerText.toLowerCase();
-            const specialite = row.children[2].innerText.toLowerCase();
-            const tel = row.children[3].innerText.toLowerCase();
-            const email = row.children[4].innerText.toLowerCase();
-            const rowSpecialiteId = row.getAttribute("data-specialite");
 
-            let matchesSearch =
-                nom.includes(search) ||
-                ordre.includes(search) ||
-                specialite.includes(search) ||
-                tel.includes(search) ||
-                email.includes(search);
+            const text = row.innerText.toLowerCase();
+            const rowSpec = row.dataset.specialite;
+            const rowGouv = row.dataset.gouv;
+            const rowVille = row.dataset.ville;
 
-            let matchesSpecialite =
-                selectedSpecialite === "" || selectedSpecialite === rowSpecialiteId;
+            let matchText = text.includes(search);
+            let matchSpec = spec === "" || spec === rowSpec;
+            let matchGouv = gouv === "" || gouv === rowGouv;
+            let matchVille = ville === "" || ville === rowVille;
 
-            row.style.display = (matchesSearch && matchesSpecialite) ? "" : "none";
+            row.style.display =
+                (matchText && matchSpec && matchGouv && matchVille)
+                ? "" : "none";
         });
     }
 
     searchInput.addEventListener("input", filterRows);
     specialiteSelect.addEventListener("change", filterRows);
+    gouvernoratSelect.addEventListener("change", filterRows);
+    villeSelect.addEventListener("change", filterRows);
 });
 </script>
 

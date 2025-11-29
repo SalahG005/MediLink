@@ -180,41 +180,76 @@ from specialite.models import Specialite
 
 @login_required
 def liste_medecins(request):
-    """Liste uniquement les médecins validés + recherche + pagination"""
 
-    medecins = Medecin.objects.filter(statut='valide').select_related('user')
+    medecins = Medecin.objects.filter(
+        statut='valide'
+    ).select_related('user', 'specialite')
 
-    # Filtre par spécialité
+    # -----------------------
+    #     FILTERS
+    # -----------------------
     specialite_filter = request.GET.get('specialite', '')
+    gouvernorat_filter = request.GET.get('gouvernorat', '')
+    ville_filter = request.GET.get('ville', '')
+
     if specialite_filter:
         medecins = medecins.filter(specialite__id_specialite=specialite_filter)
 
+    if gouvernorat_filter:
+        medecins = medecins.filter(user__gouvernorat=gouvernorat_filter)
 
-    # Recherche
-    # Recherche avancée
+    if ville_filter:
+        medecins = medecins.filter(user__ville=ville_filter)
+
+    # -----------------------
+    #     ADVANCED SEARCH
+    # -----------------------
     search_query = request.GET.get('search', '')
     if search_query:
         medecins = medecins.filter(
             Q(user__first_name__icontains=search_query) |
             Q(user__last_name__icontains=search_query) |
-            Q(user__email__icontains=search_query) |
+            Q(numero_ordre__icontains=search_query) |
             Q(telephone__icontains=search_query) |
-            Q(specialite__nom_specialite__icontains=search_query) |
-            Q(user__first_name__icontains=search_query.split()[0]) &
-            Q(user__last_name__icontains=" ".join(search_query.split()[1:]))
+            Q(user__email__icontains=search_query) |
+            Q(user__gouvernorat__icontains=search_query) |
+            Q(user__ville__icontains=search_query) |
+            Q(specialite__nom_specialite__icontains=search_query)
         )
 
-
-    # Pagination
+    # -----------------------
+    #     PAGINATION
+    # -----------------------
     paginator = Paginator(medecins, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
+    # -----------------------
+    #  DISTINCT FILTER VALUES
+    # -----------------------
+    gouvernorats = (
+        User.objects.filter(role='medecin')
+        .values_list('gouvernorat', flat=True)
+        .distinct()
+    )
+
+    villes = (
+        User.objects.filter(role='medecin')
+        .values_list('ville', flat=True)
+        .distinct()
+    )
+
     context = {
         'medecins': page_obj,
         'search_query': search_query,
+
         'specialite_filter': specialite_filter,
-        'specialites': Specialite.objects.all(),  # <-- correct key
+        'gouvernorat_filter': gouvernorat_filter,
+        'ville_filter': ville_filter,
+
+        'specialites': Specialite.objects.all(),
+        'gouvernorats': gouvernorats,
+        'villes': villes,
     }
 
     return render(request, 'liste_medecins.html', context)
