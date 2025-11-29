@@ -218,3 +218,32 @@ def liste_medecins(request):
     }
 
     return render(request, 'liste_medecins.html', context)
+#new
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from users.models import User
+from gestion_medecins.models import Medecin
+from specialite.models import Specialite
+
+@login_required
+def dashboard_admin(request):
+    if not hasattr(request.user, 'role') or request.user.role != 'admin':
+        return redirect('home')
+
+    # Statistiques
+    nb_patients_actifs = User.objects.filter(role='patient', etat_compte='actif').count()
+    nb_patients_archives = User.objects.filter(role='patient', etat_compte='archive').count()
+    nb_medecins_valide = Medecin.objects.filter(statut='valide').count()
+    nb_medecins_en_attente = Medecin.objects.filter(statut='en_attente').count()
+    nb_specialites = Specialite.objects.count()
+
+    context = {
+        'nb_patients_actifs': nb_patients_actifs,
+        'nb_patients_archives': nb_patients_archives,
+        'nb_medecins_valide': nb_medecins_valide,
+        'nb_medecins_en_attente': nb_medecins_en_attente,
+        'nb_specialites': nb_specialites,
+        'medecins_en_attente': Medecin.objects.filter(statut='en_attente').select_related('user')
+    }
+
+    return render(request, 'users/dashboard_admin.html', context)

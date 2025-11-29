@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard Admin{% endblock %}
+
+{% block content %}
+<!-- Navbar spécifique au dashboard admin -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm mb-4">
+    <div class="container">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#dashboardNavbar">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="dashboardNavbar">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link fw-bold text-primary" href="{% url 'acceuil_admin' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-bold text-primary" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link fw-bold text-primary" href="{% url 'liste_medecins_patient' %}">Patients</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<h1>Bienvenue, Administrateur 👩‍💼</h1>
+
+<!-- Statistiques rapides -->
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card text-center p-3 mb-3">
+            <h5>Patients Actifs</h5>
+            <h2>{{ nb_patients_actifs }}</h2>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center p-3 mb-3">
+            <h5>Patients Archivés</h5>
+            <h2>{{ nb_patients_archives }}</h2>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center p-3 mb-3">
+            <h5>Médecins Validés</h5>
+            <h2>{{ nb_medecins_valide }}</h2>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center p-3 mb-3">
+            <h5>Médecins En Attente</h5>
+            <h2>{{ nb_medecins_en_attente }}</h2>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="card text-center p-3 mb-3">
+            <h5>Spécialités</h5>
+            <h2>{{ nb_specialites }}</h2>
+        </div>
+    </div>
+</div>
+
+<!-- Graphiques -->
+<div class="row mt-5">
+    <div class="col-md-6">
+        <canvas id="patientsChart" width="200" height="200"></canvas>
+    </div>
+    <div class="col-md-6">
+        <canvas id="medecinsChart" width="400" height="400"></canvas>
+    </div>
+</div>
+
+<!-- Médecins en attente -->
+<h2 class="mt-5">Médecins en attente</h2>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Email</th>
+            <th>Spécialité</th>
+            <th>Statut</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for medecin in medecins_en_attente %}
+        <tr>
+            <td>{{ medecin.user.get_full_name|default:medecin.user.email }}</td>
+            <td>{{ medecin.user.email }}</td>
+            <td>{{ medecin.specialite|default:"-" }}</td>
+            <td class="text-warning">En attente</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4">Aucun médecin en attente.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<script>
+    const nbPatientsActifs = Number("{{ nb_patients_actifs|default:0 }}");
+    const nbPatientsArchives = Number("{{ nb_patients_archives|default:0 }}");
+    const nbMedecinsValide = Number("{{ nb_medecins_valide|default:0 }}");
+    const nbMedecinsEnAttente = Number("{{ nb_medecins_en_attente|default:0 }}");
+
+    const ctxPatients = document.getElementById('patientsChart').getContext('2d');
+    new Chart(ctxPatients, {
+        type: 'pie',
+        data: {
+            labels: ['Actifs', 'Archivés'],
+            datasets: [{
+                label: 'Patients',
+                data: [nbPatientsActifs, nbPatientsArchives],
+                backgroundColor: ['#1E90FF', '#87CEFA'] // palette bleue
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                title: {
+                    display: true,
+                    text: 'Répartition des patients',
+                    font: { size: 18 },
+                    padding: { top: 5, bottom: 5 } // réduit distance
+                },
+                datalabels: {
+                    color: '#fff',
+                    formatter: (value, context) => {
+                        const data = context.chart.data.datasets[0].data;
+                        const total = data.reduce((a,b) => a+b, 0);
+                        return (value / total * 100).toFixed(1) + '%';
+                    },
+                    font: { weight: 'bold', size: 14 }
+                }
+            },
+            cutout: '0%',
+        },
+        plugins: [ChartDataLabels]
+    });
+
+    const ctxMedecins = document.getElementById('medecinsChart').getContext('2d');
+    new Chart(ctxMedecins, {
+        type: 'bar',
+        data: {
+            labels: ['Validés', 'En Attente'],
+            datasets: [{
+                label: 'Médecins',
+                data: [nbMedecinsValide, nbMedecinsEnAttente],
+                backgroundColor: ['#1E90FF', '#87CEFA']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Statut des médecins', font: { size: 18 } },
+                datalabels: { anchor: 'end', align: 'end', color: '#000', font: { weight: 'bold', size: 14 } }
+            },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        },
+        plugins: [ChartDataLabels]
+    });
+</script>
+{% endblock %}
