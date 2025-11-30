@@ -243,9 +243,14 @@ def liste_medecins(request):
     context = {
         'medecins': page_obj,
         'search_query': search_query,
+
         'specialite_filter': specialite_filter,
         'gouvernorat_filter': gouvernorat_filter,
         'ville_filter': ville_filter,
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/salah-notif2
         'specialites': Specialite.objects.all(),
         'gouvernorats': gouvernorats,
         'villes': villes,

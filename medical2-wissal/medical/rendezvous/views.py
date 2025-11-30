@@ -6,6 +6,32 @@ from django.contrib.auth.decorators import login_required
 from .models import TimeSlot, RendezVous, Notification
 from django.contrib import messages
 
+# ✳️ NOUVELLE ÉTAPE — CHOISIR UN MÉDECIN
+@login_required
+def choisir_medecin(request):
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    medecins = User.objects.filter(role='medecin', statut='verifie').order_by('first_name', 'last_name')
+    medecins_with_counts = []
+    for m in medecins:
+        available_count = TimeSlot.objects.filter(medecin=m, is_available=True).count()
+        medecins_with_counts.append({'medecin': m, 'available_count': available_count})
+
+    return render(request, 'rendezvous/choisir_medecin.html', {'medecins': medecins_with_counts})
+
+
+# ✳️ AFFICHER LES CRÉNEAUX D'UN MÉDECIN SÉLECTIONNÉ
+@login_required
+def medecin_slots(request, medecin_id):
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    medecin = get_object_or_404(User, id=medecin_id, role='medecin')
+    slots = TimeSlot.objects.filter(medecin=medecin, is_available=True).order_by('date')
+
+    return render(request, 'rendezvous/medecin_slots.html', {'medecin': medecin, 'slots': slots})
+
 
 # 🗓️ PAGE PRINCIPALE DU CALENDRIER
 # Cette fonction affiche tous les créneaux disponibles dans le calendrier.
@@ -34,13 +60,19 @@ def prendre_rendezvous(request, slot_id):
 
     try:
         # ✅ 2️⃣ Create the rendez-vous
-        RendezVous.objects.create(
+        rendezvous = RendezVous.objects.create(
             patient=request.user,
             slot=slot,
             status='pending'
         )
 
-        # ✅ 3️⃣ Mark the slot unavailable
+        # 🔔 3️⃣ Create notification BEFORE returning the response
+        Notification.objects.create(
+            user=slot.medecin,
+            message=f"Le patient {request.user.first_name} {request.user.last_name} a pris rendez-vous le {slot.date}."
+        )
+
+        # ❌ 4️⃣ Mark the slot unavailable
         slot.is_available = False
         slot.save()
 
@@ -50,9 +82,13 @@ def prendre_rendezvous(request, slot_id):
 
     except Exception as e:
         print(f"ERREUR LORS DE LA RÉSERVATION: {e}")
+
         return render(request, 'rendezvous/message.html', {
             'message': "⚠️ Une erreur est survenue. Ce créneau est peut-être déjà pris."
         })
+
+
+
 
 # 👤 MES RENDEZ-VOUS
 # Cette fonction affiche tous les rendez-vous de l’utilisateur connecté.
@@ -68,6 +104,14 @@ def mes_rendezvous(request):
 def annuler_rendezvous(request, rdv_id):
     # Vérifier que le rendez-vous appartient bien à l’utilisateur
     rdv = get_object_or_404(RendezVous, id=rdv_id, patient=request.user)
+
+    # If the slot has a medecin associated, notify them about the cancellation.
+    if getattr(rdv, 'slot', None) and getattr(rdv.slot, 'medecin', None):
+        Notification.objects.create(
+            user=rdv.slot.medecin,
+            message=f"Le patient {request.user.first_name} {request.user.last_name} a annulé son rendez-vous prévu le {rdv.slot.date.strftime('%Y-%m-%d %H:%M')}."
+        )
+
 
     # Mettre à jour le statut et libérer le créneau
     rdv.status = 'canceled'
@@ -94,6 +138,14 @@ def modifier_rendezvous(request, rdv_id):
             return render(request, 'rendezvous/message.html', {
                 'message': "❌ Ce nouveau créneau est déjà réservé."
             })
+
+        # 🔔 notiff
+
+        Notification.objects.create(
+    user=new_slot.medecin,
+    message=f"Le patient {request.user.first_name} {request.user.last_name} a modifié son rendez-vous au {new_slot.date}."
+)
+
 
         # 3️⃣ Libérer l’ancien créneau
         rdv.slot.is_available = True
@@ -208,8 +260,20 @@ def medecin_liste_rdv(request):
     if request.user.role != 'medecin':
         return redirect('rendezvous:calendrier')
 
-    rdvs = RendezVous.objects.all().order_by('slot__date')
-    return render(request, 'rendezvousmedecin/medecin_liste_rdv.html', {'rdvs': rdvs})
+    # Only show appointments that belong to the logged in doctor
+    rdvs = RendezVous.objects.filter(slot__medecin=request.user).order_by('slot__date')
+
+    # Notifications for the doctor (latest first)
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    unread_count = notifications.filter(is_read=False).count()
+
+    context = {
+        'rdvs': rdvs,
+        'notifications': notifications,
+        'unread_count': unread_count,
+    }
+
+    return render(request, 'rendezvousmedecin/medecin_liste_rdv.html', context)
 
 
 # 🔹 Détails d'un rendez-vous côté médecin
