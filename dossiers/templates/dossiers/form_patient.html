@@ -1,0 +1,46 @@
+{% extends 'dossiers/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<h2>{{ title }}</h2>
+
+<form method="post" class="mt-4">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">{{ form.nom.label }}</label>
+            {{ form.nom }}
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">{{ form.prenom.label }}</label>
+            {{ form.prenom }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">{{ form.date_naissance.label }}</label>
+            {{ form.date_naissance }}
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">{{ form.sexe.label }}</label>
+            {{ form.sexe }}
+        </div>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">{{ form.telephone.label }}</label>
+        {{ form.telephone }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">{{ form.adresse.label }}</label>
+        {{ form.adresse }}
+    </div>
+    <div class="mb-3">
+        <label class="form-label">{{ form.numero_carte_identite.label }}</label>
+        {{ form.numero_carte_identite }}
+    </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <a href="{% url 'dossiers:liste_patients' %}" class="btn btn-secondary">Annuler</a>
+</form>
+{% endblock %}
+

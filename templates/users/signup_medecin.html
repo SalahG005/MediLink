@@ -1,0 +1,31 @@
+<!-- templates/users/signup_medecin.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Inscription Médecin</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/signup_medecin.css' %}">
+</head>
+
+<body>
+    <div class="container-full">
+        <div class="custom-card">
+            <h1>Inscription Médecin</h1>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+
+                <div style="text-align:center;">
+                    <button type="submit" class="btn-custom">S'inscrire</button>
+                </div>
+            </form>
+
+            <p style="text-align:center; margin-top:15px;">
+                <a href="{% url 'home' %}">Retour à l'accueil</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Supprimer le compte</title>
+</head>
+<body>
+    <h1>Êtes-vous sûr de vouloir supprimer votre compte ?</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit">Oui, supprimer mon compte</button>
+    </form>
+    <p><a href="{% url 'acceuil_patient' %}">Non, revenir à l'accueil</a></p>
+</body>
+</html>

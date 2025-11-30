@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+{% block title %}Rendez-vous - Médecin{% endblock %}
+{% load static %}
+{% block content %}
+
+<!-- Styles -->
+<style>
+body {
+    padding-top: 70px;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f3f9ff, #e0f0ff);
+    min-height: 100vh;
+    color: #1b1c74;
+}
+.navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.navbar .nav-link { color: #1b1c74; font-weight: 500; }
+.navbar .nav-link:hover { color: #272894; }
+.navbar .text-danger:hover { color: #b30000; }
+
+.table-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+}
+.table-card th {
+    background: #f0f4ff;
+    color: #1b1c74;
+    font-weight: 600;
+}
+.table-card td, .table-card th {
+    vertical-align: middle;
+    padding: 12px;
+    font-size: 0.95rem;
+}
+.table-card tbody tr:hover {
+    background: #f9fbff;
+}
+
+/* Boutons icône */
+.icon-btn {
+    background: white;
+    border: 1px solid #cdd4df;
+    border-radius: 50%;
+    padding: 6px 10px;
+    cursor: pointer;
+    margin-right: 5px;
+    transition: 0.25s;
+}
+.icon-btn:hover {
+    transform: scale(1.1);
+    background: #c9d9ff;
+    border-color: #1b1c74;
+}
+
+/* Alert centré en haut, sobre */
+#alert {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 25px;
+    background: rgba(255,255,255,0.95);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    border-radius: 12px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    display: none;
+    z-index: 9999;
+    color: #1b1c74;
+    text-align: center;
+}
+</style>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-light shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-primary" href="{% url 'acceuil_medecin' %}">🏥 MediLink</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <div class="navbar-nav ms-auto">
+                {% if request.user.is_authenticated %}
+                    {% if request.user.role == 'admin' %}
+                        <a class="nav-link" href="{% url 'acceuil_admin' %}">Dashboard</a>
+                        <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                        <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
+                    {% else %}
+                        <a class="nav-link" href="{% url 'dossiers:liste_dossiers' %}">Dossiers</a>
+                        <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
+                        <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                        <a class="nav-link" href="{% url 'disponibilite:calendar' %}">Disponibilité</a>
+                        <a class="nav-link" href="{% url 'rendezvous:medecin_liste_rdv' %}">Rendez-vous</a>
+                    {% endif %}
+                    <!-- notifications dropdown (for medecin) -->
+                    <div class="nav-item dropdown me-2">
+                        <a class="nav-link position-relative" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bell" style="font-size:1.1rem"></i>
+                            {% if unread_count and unread_count > 0 %}
+                                <span id="notif-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ unread_count }}</span>
+                            {% else %}
+                                <span id="notif-count" style="display:none"></span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="notifDropdown" style="min-width:320px; max-height:360px; overflow:auto;">
+                            <li class="d-flex justify-content-between align-items-center px-2">
+                                <strong>Notifications</strong>
+                                <button class="btn btn-sm btn-link" id="mark-all-btn">Tout marquer lu</button>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            {% if notifications %}
+                                {% for n in notifications %}
+                                <li class="px-2 py-1 notif-item {% if not n.is_read %}fw-bold bg-light{% endif %}" data-id="{{ n.id }}">
+                                    <div class="d-flex justify-content-between">
+                                        <div class="notif-body">
+                                            <div class="small text-muted">{{ n.created_at|date:"Y-m-d H:i" }}</div>
+                                            <div>{{ n.message }}</div>
+                                        </div>
+                                        <div class="ms-2">
+                                            {% if not n.is_read %}
+                                                <button class="btn btn-sm btn-outline-primary mark-read-btn" data-id="{{ n.id }}">Marquer lu</button>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Lu</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="px-2 py-2 text-center text-muted">Aucune notification.</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <a class="nav-link text-danger" href="{% url 'logout' %}">Se déconnecter</a>
+                {% else %}
+                    <a class="nav-link" href="{% url 'signin' %}">Connexion</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4 table-card">
+    <h1 class="mb-4">Liste des rendez-vous</h1>
+
+    <!-- Recherche et filtre -->
+    <div class="row mb-3">
+        <div class="col-md-6 mb-2">
+            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher par patient...">
+        </div>
+        <div class="col-md-3 mb-2">
+            <select id="statusFilter" class="form-select">
+                <option value="">Tous les statuts</option>
+                <option value="pending">En attente</option>
+                <option value="confirmed">Confirmé</option>
+                <option value="canceled">Annulé</option>
+                <option value="rescheduled">Reporté</option>
+            </select>
+        </div>
+    </div>
+
+    <table class="table table-striped" id="rdvTable">
+        <thead>
+            <tr>
+                <th>Patient</th>
+                <th>Date / Heure</th>
+                <th>Statut</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rdv in rdvs %}
+            <tr id="rdv-{{ rdv.id }}">
+                <td>{{ rdv.patient.get_full_name }}</td>
+                <td>{{ rdv.slot.date|date:"Y-m-d H:i" }}</td>
+                <td class="status" id="status-{{ rdv.id }}">{{ rdv.status }}</td>
+                <td>
+                    {% if rdv.status == 'pending' %}
+                        <button class="icon-btn" onclick="confirmAction('valider', {{ rdv.id }})" title="Valider">
+                            <i class="bi bi-check-lg text-success"></i>
+                        </button>
+                        <button class="icon-btn" onclick="confirmAction('reporter', {{ rdv.id }})" title="Reporter">
+                            <i class="bi bi-arrow-repeat text-primary"></i>
+                        </button>
+                        <button class="icon-btn" onclick="confirmAction('annuler', {{ rdv.id }})" title="Annuler">
+                            <i class="bi bi-x-lg text-danger"></i>
+                        </button>
+                    {% else %}
+                        <span class="text-muted">Actions indisponibles</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">Aucun rendez-vous.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Alert -->
+<div id="alert"></div>
+
+<!-- Scripts -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+<script>
+function showAlert(message) {
+    const alertBox = document.getElementById('alert');
+    alertBox.textContent = message;
+    alertBox.style.display = 'block';
+    alertBox.style.opacity = 0;
+    let opacity = 0;
+    const fadeIn = setInterval(() => {
+        if(opacity < 1) {
+            opacity += 0.1;
+            alertBox.style.opacity = opacity;
+        } else {
+            clearInterval(fadeIn);
+        }
+    }, 30);
+
+    setTimeout(() => {
+        let fadeOutOpacity = 1;
+        const fadeOut = setInterval(() => {
+            if(fadeOutOpacity > 0) {
+                fadeOutOpacity -= 0.1;
+                alertBox.style.opacity = fadeOutOpacity;
+            } else {
+                clearInterval(fadeOut);
+                alertBox.style.display = 'none';
+            }
+        }, 30);
+    }, 2500);
+}
+
+function updateStatus(rdvId, newStatus) {
+    document.getElementById(`status-${rdvId}`).textContent = newStatus;
+    const row = document.getElementById(`rdv-${rdvId}`);
+    row.querySelectorAll('button').forEach(btn => btn.style.display = 'none');
+}
+
+function confirmAction(action, rdvId) {
+    let confirmMsg = '';
+    switch(action) {
+        case 'valider': confirmMsg = 'Confirmer ce rendez-vous ?'; break;
+        case 'annuler': confirmMsg = 'Annuler ce rendez-vous ?'; break;
+        case 'reporter': confirmMsg = 'Reporter ce rendez-vous ?'; break;
+    }
+
+    if (!confirm(confirmMsg)) return;
+
+    if (action === 'reporter') {
+        window.location.href = `/rendezvous/medecin/reporter/${rdvId}/`;
+        return;
+    }
+
+    fetch(`/rendezvous/medecin/${action}/${rdvId}/`)
+    .then(response => {
+        if (response.ok) {
+            let statusText = action === 'valider' ? 'confirmed' : 'canceled';
+            updateStatus(rdvId, statusText);
+            showAlert(
+                action === 'valider' ? '✅ Rendez-vous confirmé et patient notifié.' :
+                '✅ Rendez-vous annulé et patient notifié.'
+            );
+        }
+    });
+}
+
+// Filtrage dynamique
+document.getElementById('searchInput').addEventListener('keyup', filterTable);
+document.getElementById('statusFilter').addEventListener('change', filterTable);
+
+function filterTable() {
+    const searchValue = document.getElementById('searchInput').value.toLowerCase();
+    const statusValue = document.getElementById('statusFilter').value;
+
+    const rows = document.querySelectorAll('#rdvTable tbody tr');
+    rows.forEach(row => {
+        const patient = row.cells[0].textContent.toLowerCase();
+        const status = row.querySelector('.status').textContent;
+
+        const matchesSearch = patient.includes(searchValue);
+        const matchesStatus = !statusValue || status === statusValue;
+
+        row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+    });
+}
+</script>
+
+<script>
+// Notifications: mark single and mark all as read
+function updateNotifCount(delta) {
+    const badge = document.getElementById('notif-count');
+    if (!badge) return;
+    let count = parseInt(badge.textContent || 0);
+    count = Math.max(0, count + delta);
+    if (count <= 0) {
+        badge.style.display = 'none';
+        badge.textContent = '';
+    } else {
+        badge.style.display = '';
+        badge.textContent = count;
+    }
+}
+
+document.querySelectorAll('.mark-read-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        const id = this.dataset.id;
+        fetch(`/rendezvous/notifications/mark_read/${id}/`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const li = document.querySelector(`.notif-item[data-id='${id}']`);
+                    if (li) {
+                        li.classList.remove('fw-bold', 'bg-light');
+                        // replace button with 'Lu' badge
+                        const btn = li.querySelector('.mark-read-btn');
+                        if (btn) btn.replaceWith(Object.assign(document.createElement('span'), { className: 'badge bg-secondary', textContent: 'Lu' }));
+                        updateNotifCount(-1);
+                    }
+                }
+            });
+    });
+});
+
+const markAllBtn = document.getElementById('mark-all-btn');
+if (markAllBtn) {
+    markAllBtn.addEventListener('click', function(e) {
+        fetch('/rendezvous/notifications/mark_all_read/', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    document.querySelectorAll('.notif-item.fw-bold').forEach(li => {
+                        li.classList.remove('fw-bold', 'bg-light');
+                        const b = li.querySelector('.mark-read-btn');
+                        if (b) b.replaceWith(Object.assign(document.createElement('span'), { className: 'badge bg-secondary', textContent: 'Lu' }));
+                    });
+                    // clear count
+                    const badge = document.getElementById('notif-count');
+                    if (badge) { badge.style.display = 'none'; badge.textContent = ''; }
+                }
+            });
+    });
+}
+</script>
+
+{% endblock %}
