@@ -260,8 +260,20 @@ def medecin_liste_rdv(request):
     if request.user.role != 'medecin':
         return redirect('rendezvous:calendrier')
 
-    rdvs = RendezVous.objects.all().order_by('slot__date')
-    return render(request, 'rendezvousmedecin/medecin_liste_rdv.html', {'rdvs': rdvs})
+    # Only show appointments that belong to the logged in doctor
+    rdvs = RendezVous.objects.filter(slot__medecin=request.user).order_by('slot__date')
+
+    # Notifications for the doctor (latest first)
+    notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
+    unread_count = notifications.filter(is_read=False).count()
+
+    context = {
+        'rdvs': rdvs,
+        'notifications': notifications,
+        'unread_count': unread_count,
+    }
+
+    return render(request, 'rendezvousmedecin/medecin_liste_rdv.html', context)
 
 
 # 🔹 Détails d'un rendez-vous côté médecin

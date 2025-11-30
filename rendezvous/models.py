@@ -44,7 +44,13 @@ class RendezVous(models.Model):
     booked_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"{self.patient.username} - {self.slot.date.strftime('%Y-%m-%d %H:%M')} ({self.status})"
+        # user model may not have username (custom User). Prefer full name then email.
+        patient_name = getattr(self.patient, 'get_full_name', None)
+        if callable(patient_name):
+            name = self.patient.get_full_name() or getattr(self.patient, 'email', str(self.patient))
+        else:
+            name = getattr(self.patient, 'email', str(self.patient))
+        return f"{name} - {self.slot.date.strftime('%Y-%m-%d %H:%M')} ({self.status})"
 
         
 class Notification(models.Model):
@@ -54,4 +60,9 @@ class Notification(models.Model):
     is_read = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Notif pour {self.user.username} — {self.message[:20]}..."
+        user_name = getattr(self.user, 'get_full_name', None)
+        if callable(user_name):
+            display = self.user.get_full_name() or getattr(self.user, 'email', str(self.user))
+        else:
+            display = getattr(self.user, 'email', str(self.user))
+        return f"Notif pour {display} — {self.message[:20]}..."
