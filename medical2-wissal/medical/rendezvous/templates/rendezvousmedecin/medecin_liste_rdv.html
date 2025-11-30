@@ -79,7 +79,7 @@ body {
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg fixed-top navbar-light bg-light shadow-sm">
     <div class="container">
-        <a class="navbar-brand fw-bold text-primary" href="{% url 'signin' %}">🏥 MediLink</a>
+        <a class="navbar-brand fw-bold text-primary" href="{% url 'acceuil_medecin' %}">🏥 MediLink</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -97,7 +97,48 @@ body {
                         <a class="nav-link" href="{% url 'disponibilite:calendar' %}">Disponibilité</a>
                         <a class="nav-link" href="{% url 'rendezvous:medecin_liste_rdv' %}">Rendez-vous</a>
                     {% endif %}
-                    <a class="nav-link text-danger" href="{% url 'signin' %}">Se déconnecter</a>
+                    <!-- notifications dropdown (for medecin) -->
+                    <div class="nav-item dropdown me-2">
+                        <a class="nav-link position-relative" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-bell" style="font-size:1.1rem"></i>
+                            {% if unread_count and unread_count > 0 %}
+                                <span id="notif-count" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ unread_count }}</span>
+                            {% else %}
+                                <span id="notif-count" style="display:none"></span>
+                            {% endif %}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end p-2" aria-labelledby="notifDropdown" style="min-width:320px; max-height:360px; overflow:auto;">
+                            <li class="d-flex justify-content-between align-items-center px-2">
+                                <strong>Notifications</strong>
+                                <button class="btn btn-sm btn-link" id="mark-all-btn">Tout marquer lu</button>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            {% if notifications %}
+                                {% for n in notifications %}
+                                <li class="px-2 py-1 notif-item {% if not n.is_read %}fw-bold bg-light{% endif %}" data-id="{{ n.id }}">
+                                    <div class="d-flex justify-content-between">
+                                        <div class="notif-body">
+                                            <div class="small text-muted">{{ n.created_at|date:"Y-m-d H:i" }}</div>
+                                            <div>{{ n.message }}</div>
+                                        </div>
+                                        <div class="ms-2">
+                                            {% if not n.is_read %}
+                                                <button class="btn btn-sm btn-outline-primary mark-read-btn" data-id="{{ n.id }}">Marquer lu</button>
+                                            {% else %}
+                                                <span class="badge bg-secondary">Lu</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% endfor %}
+                            {% else %}
+                                <li class="px-2 py-2 text-center text-muted">Aucune notification.</li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <a class="nav-link text-danger" href="{% url 'logout' %}">Se déconnecter</a>
                 {% else %}
                     <a class="nav-link" href="{% url 'signin' %}">Connexion</a>
                 {% endif %}
@@ -254,6 +295,63 @@ function filterTable() {
         const matchesStatus = !statusValue || status === statusValue;
 
         row.style.display = (matchesSearch && matchesStatus) ? '' : 'none';
+    });
+}
+</script>
+
+<script>
+// Notifications: mark single and mark all as read
+function updateNotifCount(delta) {
+    const badge = document.getElementById('notif-count');
+    if (!badge) return;
+    let count = parseInt(badge.textContent || 0);
+    count = Math.max(0, count + delta);
+    if (count <= 0) {
+        badge.style.display = 'none';
+        badge.textContent = '';
+    } else {
+        badge.style.display = '';
+        badge.textContent = count;
+    }
+}
+
+document.querySelectorAll('.mark-read-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        const id = this.dataset.id;
+        fetch(`/rendezvous/notifications/mark_read/${id}/`, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    const li = document.querySelector(`.notif-item[data-id='${id}']`);
+                    if (li) {
+                        li.classList.remove('fw-bold', 'bg-light');
+                        // replace button with 'Lu' badge
+                        const btn = li.querySelector('.mark-read-btn');
+                        if (btn) btn.replaceWith(Object.assign(document.createElement('span'), { className: 'badge bg-secondary', textContent: 'Lu' }));
+                        updateNotifCount(-1);
+                    }
+                }
+            });
+    });
+});
+
+const markAllBtn = document.getElementById('mark-all-btn');
+if (markAllBtn) {
+    markAllBtn.addEventListener('click', function(e) {
+        fetch('/rendezvous/notifications/mark_all_read/', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    document.querySelectorAll('.notif-item.fw-bold').forEach(li => {
+                        li.classList.remove('fw-bold', 'bg-light');
+                        const b = li.querySelector('.mark-read-btn');
+                        if (b) b.replaceWith(Object.assign(document.createElement('span'), { className: 'badge bg-secondary', textContent: 'Lu' }));
+                    });
+                    // clear count
+                    const badge = document.getElementById('notif-count');
+                    if (badge) { badge.style.display = 'none'; badge.textContent = ''; }
+                }
+            });
     });
 }
 </script>

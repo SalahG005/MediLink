@@ -151,7 +151,7 @@ h2 {
         <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav align-items-center position-relative">
                 <li class="nav-item"><a class="nav-link" href="{% url 'acceuil_patient' %}">Accueil</a></li>
-                <li class="nav-item"><a class="nav-link" href="{% url 'rendezvous:calendrier' %}">Calendrier</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'rendezvous:choisir_medecin' %}">Prendre un rendez-vous</a></li>
                 <li class="nav-item"><a class="nav-link" href="{% url 'rendezvous:mes_rendezvous' %}">Mes Rendez-vous</a></li>
 
                 <!-- Notification bell -->
@@ -206,7 +206,7 @@ h2 {
         {% else %}
             <div class="text-center py-5">
                 <h5 class="text-muted">Aucun rendez-vous pour le moment.</h5>
-                <a href="{% url 'rendezvous:calendrier' %}" class="btn btn-custom mt-3">📅 Prendre un rendez-vous</a>
+                <a href="{% url 'rendezvous:choisir_medecin' %}" class="btn btn-custom mt-3">📅 Prendre un rendez-vous</a>
             </div>
         {% endif %}
     </div>

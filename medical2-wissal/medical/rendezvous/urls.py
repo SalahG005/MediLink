@@ -6,6 +6,10 @@ app_name = 'rendezvous'  # ✅ AJOUTE CETTE LIGNE
 
 urlpatterns = [
     path('calendrier/', views.calendrier, name='calendrier'),
+    # étape 1 → choisir un médecin
+    path('choisir-medecin/', views.choisir_medecin, name='choisir_medecin'),
+    # étape 2 → voir les créneaux pour le médecin choisi
+    path('medecin/<int:medecin_id>/slots/', views.medecin_slots, name='medecin_slots'),
     path('prendre/<int:slot_id>/', views.prendre_rendezvous, name='prendre_rendezvous'),
     path('mes-rendezvous/', views.mes_rendezvous, name='mes_rendezvous'),
     path('annuler/<int:rdv_id>/', views.annuler_rendezvous, name='cancel_rdv'),
