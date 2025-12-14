@@ -1,20 +1,6 @@
 from django.db import models
 from django.conf import settings  # <-- pour utiliser le User personnalisé
-
-# ---- TimeSlot ----
-class TimeSlot(models.Model):
-    medecin = models.ForeignKey(
-    settings.AUTH_USER_MODEL,
-    on_delete=models.CASCADE,
-    null=True,
-    limit_choices_to={'role': 'medecin'}
-)
-
-    date = models.DateTimeField(unique=True)  # unique = pas de doublons pour le même créneau
-    is_available = models.BooleanField(default=True)  # True = disponible, False = réservé
-
-    def __str__(self):
-        return self.date.strftime("%Y-%m-%d %H:%M")
+from disponibilite.models import Disponibilite
 
 # ---- RendezVous ----
 class RendezVous(models.Model):
@@ -32,7 +18,6 @@ class RendezVous(models.Model):
     )
 
     # un créneau ne peut appartenir qu'à un rendez-vous
-    slot = models.OneToOneField(TimeSlot, on_delete=models.CASCADE)
 
     # le statut du rendez-vous
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
@@ -42,7 +27,10 @@ class RendezVous(models.Model):
 
     # date de réservation
     booked_at = models.DateTimeField(auto_now_add=True)
-
+    disponibilite = models.OneToOneField(
+        Disponibilite,
+        on_delete=models.CASCADE
+    )
     def __str__(self):
         # user model may not have username (custom User). Prefer full name then email.
         patient_name = getattr(self.patient, 'get_full_name', None)
@@ -50,7 +38,7 @@ class RendezVous(models.Model):
             name = self.patient.get_full_name() or getattr(self.patient, 'email', str(self.patient))
         else:
             name = getattr(self.patient, 'email', str(self.patient))
-        return f"{name} - {self.slot.date.strftime('%Y-%m-%d %H:%M')} ({self.status})"
+            return f"{name} - {self.disponibilite.date} ({self.status})"
 
         
 class Notification(models.Model):

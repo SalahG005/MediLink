@@ -3,6 +3,7 @@ from django.views import View
 from django.http import JsonResponse
 from .models import Disponibilite
 from datetime import date, timedelta, datetime, time
+from django.contrib.auth.decorators import login_required
 
 # Affichage du calendrier
 class CalendarView(View):
@@ -147,3 +148,25 @@ class DisponibiliteUpdate(View):
             return JsonResponse({"status": "ok"})
         except Disponibilite.DoesNotExist:
             return JsonResponse({"status": "error"})
+def calendrier(request):
+    medecin = request.user  # médecin connecté
+    return render(request, 'disponibilite/calendar.html', {'medecin': medecin})
+
+# JSON pour FullCalendar
+class DisponibiliteJson(View):
+    def get(self, request):
+        medecin = request.user
+        disponibilites = Disponibilite.objects.filter(medecin=medecin)
+        events = []
+
+        for dispo in disponibilites:
+            events.append({
+                "id": dispo.id,
+                "title": "Disponible" if dispo.disponible else "Réservé",
+                "start": f"{dispo.date}T{dispo.heure_debut}",
+                "end": f"{dispo.date}T{dispo.heure_fin}",
+                "color": "#70a1ff" if dispo.disponible else "red",
+                "editable": dispo.disponible
+            })
+
+        return JsonResponse(events, safe=False)

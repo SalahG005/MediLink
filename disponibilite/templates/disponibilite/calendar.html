@@ -198,7 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
             center: 'title',
             right: 'dayGridMonth,timeGridWeek,timeGridDay'
         },
-        events: '/disponibilite/json/',
+events: '/disponibilite/json/',
         select: function(info) {
             addMode = true;
             selectedEvent = null;
@@ -241,35 +241,46 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     document.getElementById('editForm').addEventListener('submit', function(e){
-        e.preventDefault();
-        let date=document.getElementById('modalDate').value;
-        let start=document.getElementById('modalStart').value;
-        let end=document.getElementById('modalEnd').value;
-        if(addMode){
-            fetch(`/disponibilite/add/`, {
-                method:'POST',
-                headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':'{{ csrf_token }}'},
-                body:`date=${date}&heure_debut=${start}&heure_fin=${end}`
-            })
-            .then(r=>r.json()).then(data=>{
-                if(data.status==="ok"){
-                    calendar.refetchEvents(); 
-                    bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-                } else {
-                    alert(data.message);
-                }
-            });
-        } else {
-            fetch(`/disponibilite/update/${selectedEvent.id}/`, {
-                method:'POST',
-                headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':'{{ csrf_token }}'},
-                body:`date=${date}&heure_debut=${start}&heure_fin=${end}`
-            }).then(()=>{
-                calendar.refetchEvents(); 
-                bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-            });
-        }
-    });
+    e.preventDefault(); // empêche le submit HTML classique
+
+    let date = document.getElementById('modalDate').value;
+    let start = document.getElementById('modalStart').value;
+    let end = document.getElementById('modalEnd').value;
+
+    if(addMode){ // AJOUT
+        fetch('/disponibilite/add/', {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `date=${date}&heure_debut=${start}&heure_fin=${end}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.status === 'ok'){
+                calendar.refetchEvents(); // rafraîchit le calendrier
+                bootstrap.Modal.getInstance(document.getElementById('editModal')).hide(); // ferme modal
+            } else {
+                alert(data.message);
+            }
+        }).catch(err => alert('Erreur lors de l’ajout: ' + err));
+    } else { // UPDATE
+        fetch(`/disponibilite/update/${selectedEvent.id}/`, {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body:`date=${date}&heure_debut=${start}&heure_fin=${end}`
+        })
+        .then(() => {
+            calendar.refetchEvents();
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+        }).catch(err => alert('Erreur update: ' + err));
+    }
+});
+
 
     document.getElementById('deleteEventBtn').addEventListener('click', function(){
         if(!selectedEvent) return;

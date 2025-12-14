@@ -14,7 +14,9 @@
     <!-- Navbar commune -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
+            {% if not hide_navbar_brand %}
             <a class="navbar-brand fw-bold text-primary" href="#">MediLink</a>
+            {% endif %}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -49,7 +51,6 @@
     </div>
 
     <!-- Footer commun -->
-       <!-- Footer commun -->
     <footer class="text-center mt-5 mb-3 text-muted">
         © 2025 MediLink — Tous droits réservés
     </footer>

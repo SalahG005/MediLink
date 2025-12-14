@@ -1,0 +1,170 @@
+/* ------------------- BODY & DASHBOARD ------------------- */
+body {
+    background-color: #eef3ff;
+    font-family: 'Segoe UI', sans-serif;
+    color: #343a40;
+    margin: 0;
+    padding: 0;
+    padding-top: 100px; /* hauteur de la navbar + un petit espace */
+
+}
+
+.dashboard-container {
+    padding: 20px;
+}
+
+/* ------------------- HEADER ------------------- */
+.dashboard-header {
+    margin-bottom: 30px;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+}
+.dashboard-header h2 {
+    font-weight: 700;
+    font-size: 1.9rem;
+}
+.dashboard-header p {
+    font-size: 0.95rem;
+    color: #d1e0ff;
+}
+.avatar {
+    width: 50px;
+    height: 50px;
+    border: 2px solid #fff;
+}
+
+/* ------------------- STAT CARDS ------------------- */
+.card {
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    background-color: #fff;
+    transition: all 0.3s ease;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+.stat-card {
+    padding: 25px;
+    text-align: center;
+}
+.stat-card h6 {
+    font-weight: 500;
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+.stat-card h3 {
+    font-weight: 700;
+    font-size: 2.2rem;
+    color: #1e3c72;
+}
+
+/* ------------------- APPOINTMENTS ------------------- */
+.appointments-card h5 {
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+.appointments-card table th,
+.appointments-card table td {
+    vertical-align: middle;
+    font-size: 0.95rem;
+}
+.appointments-card table th {
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+}
+.appointments-card table td .badge {
+    font-size: 0.85rem;
+    padding: 0.45em 0.7em;
+    border-radius: 12px;
+}
+/* ------------------- CALENDAR CARD ------------------- */
+.calendar-card {
+    padding: 15px;
+    text-align: center;
+    background-color: transparent;
+    margin-left: auto;   /* pousse le calendrier à droite */
+    margin-right: 0;
+    max-width: 90%;      /* limite la largeur */
+}
+
+/* Flatpickr calendar */
+.flatpickr-calendar {
+    width: 100%;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    font-family: 'Segoe UI', sans-serif;
+    color: #343a40;
+    padding: 10px;
+}
+
+.flatpickr-day {
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.flatpickr-day:hover {
+    background-color: #0a3d91;
+    color: #fff;
+}
+
+.flatpickr-day.today {
+    background-color: #1e3c72;
+    color: #fff;
+}
+
+.flatpickr-day.selected {
+    background-color: #4a90e2;
+    color: #fff;
+}
+
+.flatpickr-months {
+    background-color: #0a3d91;
+    color: #fff;
+    border-radius: 10px 10px 0 0;
+    padding: 8px 0;
+}
+
+.flatpickr-weekdays {
+    color: #0a3d91;
+    font-weight: 600;
+}
+
+.flatpickr-prev-month, .flatpickr-next-month {
+    color: #ffd700;
+}
+
+.flatpickr-prev-month:hover, .flatpickr-next-month:hover {
+    color: #ffdd57;
+    cursor: pointer;
+}
+
+/* INPUT */
+#mini-calendar {
+    width: 100%;
+    border: none;
+    font-size: 1rem;
+    padding: 12px;
+    border-radius: 12px;
+    background-color: rgba(240, 248, 255, 0.8);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+/* RESPONSIVE */
+@media (max-width: 992px) {
+    .calendar-card {
+        margin-left: 0;
+        margin-right: 0;
+        margin-top: 20px;
+    }
+}
+
+
+.dashboard-container {
+    padding-top: 5px; /* ou même 0 si tu veux tout en haut */
+    padding-left: 20px;
+    padding-right: 20px;
+}

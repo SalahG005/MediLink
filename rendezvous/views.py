@@ -1,93 +1,23 @@
+from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import TimeSlot, RendezVous
+from disponibilite.models import Disponibilite
+from .models import RendezVous, Notification
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import TimeSlot, RendezVous, Notification
 from django.contrib import messages
+from users.models import User
+from .models import RendezVous, Disponibilite
 
-# ✳️ NOUVELLE ÉTAPE — CHOISIR UN MÉDECIN
 @login_required
 def choisir_medecin(request):
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
-
-    medecins = User.objects.filter(role='medecin', statut='verifie').order_by('first_name', 'last_name')
+    medecins = User.objects.filter(role='medecin', statut='verifie').order_by('first_name')
+    # On compte les créneaux disponibles
     medecins_with_counts = []
     for m in medecins:
-        available_count = TimeSlot.objects.filter(medecin=m, is_available=True).count()
-        medecins_with_counts.append({'medecin': m, 'available_count': available_count})
-
+        count = Disponibilite.objects.filter(medecin=m, disponible=True).count()
+        medecins_with_counts.append({'medecin': m, 'available_count': count})
     return render(request, 'rendezvous/choisir_medecin.html', {'medecins': medecins_with_counts})
-
-
-# ✳️ AFFICHER LES CRÉNEAUX D'UN MÉDECIN SÉLECTIONNÉ
-@login_required
-def medecin_slots(request, medecin_id):
-    from django.contrib.auth import get_user_model
-    User = get_user_model()
-
-    medecin = get_object_or_404(User, id=medecin_id, role='medecin')
-    slots = TimeSlot.objects.filter(medecin=medecin, is_available=True).order_by('date')
-
-    return render(request, 'rendezvous/medecin_slots.html', {'medecin': medecin, 'slots': slots})
-
-
-# 🗓️ PAGE PRINCIPALE DU CALENDRIER
-# Cette fonction affiche tous les créneaux disponibles dans le calendrier.
-@login_required
-def calendrier(request):
-    # On récupère les créneaux disponibles (is_available = True)
-    slots = TimeSlot.objects.all()
-    return render(request, 'rendezvous/calendrier.html', {'slots': slots})
-    print(slots)  # ça doit afficher tous tes TimeSlot dans la console
-
-
-
-# 📅 RÉSERVER UN RENDEZ-VOUS
-# Cette fonction est appelée quand le patient clique sur un créneau pour le réserver.
-@login_required
-def prendre_rendezvous(request, slot_id):
-    slot = get_object_or_404(TimeSlot, id=slot_id)
-
-    print(f"DEBUG — Slot {slot.id} availability: {slot.is_available}")
-
-    # 🔒 1️⃣ Check if the slot is already booked
-    if not slot.is_available or RendezVous.objects.filter(slot=slot).exists():
-        return render(request, 'rendezvous/message.html', {
-            'message': "❌ Ce créneau est déjà réservé par un autre utilisateur."
-        })
-
-    try:
-        # ✅ 2️⃣ Create the rendez-vous
-        rendezvous = RendezVous.objects.create(
-            patient=request.user,
-            slot=slot,
-            status='pending'
-        )
-
-        # 🔔 3️⃣ Create notification BEFORE returning the response
-        Notification.objects.create(
-            user=slot.medecin,
-            message=f"Le patient {request.user.first_name} {request.user.last_name} a pris rendez-vous le {slot.date}."
-        )
-
-        # ❌ 4️⃣ Mark the slot unavailable
-        slot.is_available = False
-        slot.save()
-
-        return render(request, 'rendezvous/message.html', {
-            'message': "✅ Rendez-vous pris avec succès !"
-        })
-
-    except Exception as e:
-        print(f"ERREUR LORS DE LA RÉSERVATION: {e}")
-
-        return render(request, 'rendezvous/message.html', {
-            'message': "⚠️ Une erreur est survenue. Ce créneau est peut-être déjà pris."
-        })
-
-
 
 
 # 👤 MES RENDEZ-VOUS
@@ -102,80 +32,58 @@ def mes_rendezvous(request):
 # Cette fonction permet à un utilisateur d’annuler son rendez-vous.
 @login_required
 def annuler_rendezvous(request, rdv_id):
-    # Vérifier que le rendez-vous appartient bien à l’utilisateur
     rdv = get_object_or_404(RendezVous, id=rdv_id, patient=request.user)
 
-    # If the slot has a medecin associated, notify them about the cancellation.
-    if getattr(rdv, 'slot', None) and getattr(rdv.slot, 'medecin', None):
-        Notification.objects.create(
-            user=rdv.slot.medecin,
-            message=f"Le patient {request.user.first_name} {request.user.last_name} a annulé son rendez-vous prévu le {rdv.slot.date.strftime('%Y-%m-%d %H:%M')}."
-        )
+    # 🔔 notifier le médecin
+    Notification.objects.create(
+        user=rdv.disponibilite.medecin,
+        message=f"Le patient {request.user.get_full_name()} a annulé son rendez-vous du {rdv.disponibilite.date}."
+    )
 
-
-    # Mettre à jour le statut et libérer le créneau
     rdv.status = 'canceled'
-    rdv.slot.is_available = True
-    rdv.slot.save()
+    rdv.disponibilite.disponible = True
+    rdv.disponibilite.save()
     rdv.save()
 
-    # Redirection vers la page "Mes rendez-vous"
     return redirect('rendezvous:mes_rendezvous')
 
-# 🕒 MODIFIER (REPORTER) UN RENDEZ-VOUS
-@login_required
+
+# 🕒 MODIFIER (REPOR@login_required
 def modifier_rendezvous(request, rdv_id):
-    # 1️⃣ Vérifier que le rendez-vous appartient à l’utilisateur
     rdv = get_object_or_404(RendezVous, id=rdv_id, patient=request.user)
 
     if request.method == 'POST':
-        # 2️⃣ Récupérer le nouvel ID de créneau depuis le formulaire
-        new_slot_id = request.POST.get('new_slot_id')
-        new_slot = get_object_or_404(TimeSlot, id=new_slot_id)
+        new_dispo_id = request.POST.get('new_dispo_id')
+        new_dispo = get_object_or_404(Disponibilite, id=new_dispo_id, disponible=True)
 
-        # Vérifier que le nouveau créneau est disponible
-        if not new_slot.is_available or RendezVous.objects.filter(slot=new_slot).exists():
-            return render(request, 'rendezvous/message.html', {
-                'message': "❌ Ce nouveau créneau est déjà réservé."
-            })
+        rdv.disponibilite.disponible = True
+        rdv.disponibilite.save()
 
-        # 🔔 notiff
-
-        Notification.objects.create(
-    user=new_slot.medecin,
-    message=f"Le patient {request.user.first_name} {request.user.last_name} a modifié son rendez-vous au {new_slot.date}."
-)
-
-
-        # 3️⃣ Libérer l’ancien créneau
-        rdv.slot.is_available = True
-        rdv.slot.save()
-
-        # 4️⃣ Réserver le nouveau créneau
-        rdv.slot = new_slot
-        new_slot.is_available = False
-        new_slot.save()
-
-        # 5️⃣ Mettre à jour le rendez-vous
+        rdv.disponibilite = new_dispo
         rdv.status = 'rescheduled'
+        new_dispo.disponible = False
+        new_dispo.save()
         rdv.save()
 
+        Notification.objects.create(
+            user=new_dispo.medecin,
+            message=f"Le patient {request.user.get_full_name()} a reporté son rendez-vous."
+        )
+
         return render(request, 'rendezvous/message.html', {
-            'message': "✅ Rendez-vous mis à jour avec succès !"
+            'message': "✅ Rendez-vous reporté avec succès."
         })
 
-    # Si GET → afficher la liste des créneaux disponibles
-    available_slots = TimeSlot.objects.filter(is_available=True)
+    disponibilites = Disponibilite.objects.filter(disponible=True)
     return render(request, 'rendezvous/modifier_rendezvous.html', {
         'rdv': rdv,
-        'available_slots': available_slots
+        'disponibilites': disponibilites
     })
-
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import RendezVous, TimeSlot, Notification
+from .models import RendezVous, Disponibilite, Notification
 
 # 🔹 Annuler un rendez-vous
 @login_required
@@ -185,13 +93,13 @@ def medecin_annuler_rdv(request, rdv_id):
 
     rdv = get_object_or_404(RendezVous, id=rdv_id)
     rdv.status = 'canceled'
-    rdv.slot.is_available = True
-    rdv.slot.save()
+    rdv.disponibilite.disponible = True
+    rdv.disponibilite.save()
     rdv.save()
 
     Notification.objects.create(
         user=rdv.patient,
-        message=f"Votre rendez-vous du {rdv.slot.date.strftime('%Y-%m-%d %H:%M')} a été annulé par le médecin."
+        message=f"Votre rendez-vous du {rdv.disponibilite.date.strftime('%Y-%m-%d %H:%M')} a été annulé par le médecin."
     )
 
     messages.success(request, "✅ Rendez-vous annulé et patient notifié.")
@@ -210,7 +118,7 @@ def medecin_valider_rdv(request, rdv_id):
 
     Notification.objects.create(
         user=rdv.patient,
-        message=f"Votre rendez-vous du {rdv.slot.date.strftime('%Y-%m-%d %H:%M')} a été confirmé par le médecin."
+        message=f"Votre rendez-vous du {rdv.disponibilite.date.strftime('%Y-%m-%d %H:%M')} a été confirmé par le médecin."
     )
 
     messages.success(request, " Rendez-vous confirmé et patient notifié.")
@@ -221,36 +129,34 @@ def medecin_reporter_rdv(request, rdv_id):
     rdv = get_object_or_404(RendezVous, id=rdv_id)
 
     if request.method == 'POST':
-        new_slot_id = request.POST.get('new_slot_id')  # ← corrigé
-        new_slot = get_object_or_404(TimeSlot, id=new_slot_id)
+        new_dispo_id = request.POST.get('new_dispo_id')
+        new_dispo = get_object_or_404(Disponibilite, id=new_dispo_id, disponible=True)
+
 
         # Vérifier que le créneau est disponible
-        if RendezVous.objects.filter(slot=new_slot).exists():
+        if RendezVous.objects.filter(disponibilite=new_dispo).exists():
+
             messages.error(request, "Ce créneau est déjà réservé.")
             return redirect('rendezvous:medecin_liste_rdv')
 
-        # Libérer l'ancien slot
-        rdv.slot.is_available = True
-        rdv.slot.save()
+        rdv.disponibilite.disponible = True
+        rdv.disponibilite.save()
 
-        # Assigner le nouveau slot
-        rdv.slot = new_slot
+        rdv.disponibilite = new_dispo
         rdv.status = 'rescheduled'
         rdv.save()
 
-        # Marquer le nouveau slot comme occupé
-        new_slot.is_available = False
-        new_slot.save()
-
+        new_dispo.disponible = False
+        new_dispo.save()
         messages.success(request, "Rendez-vous reporté avec succès.")
         return redirect('rendezvous:medecin_liste_rdv')
 
-    # GET → afficher le formulaire avec slots disponibles
-    available_slots = TimeSlot.objects.filter(is_available=True)
+    available_disponibilites = Disponibilite.objects.filter(disponible=True)
+
     return render(request, 'rendezvousmedecin/modifier_rdv_medecin.html', {
-        'rdv': rdv,
-        'available_slots': available_slots
-    })
+    'rdv': rdv,
+    'available_disponibilites': available_disponibilites
+})
 
 
 
@@ -261,7 +167,7 @@ def medecin_liste_rdv(request):
         return redirect('rendezvous:calendrier')
 
     # Only show appointments that belong to the logged in doctor
-    rdvs = RendezVous.objects.filter(slot__medecin=request.user).order_by('slot__date')
+    rdvs = RendezVous.objects.filter(disponibilite__medecin=request.user).order_by('disponibilite__date')
 
     # Notifications for the doctor (latest first)
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
@@ -331,3 +237,60 @@ def mark_all_read(request):
         Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
         return JsonResponse({"status": "ok"})
     return JsonResponse({'status': 'failed', 'error': 'Invalid request'})
+from django.shortcuts import render
+
+from django.shortcuts import render, redirect
+
+@login_required
+def medecin_slots(request, medecin_id):
+    # Redirection vers le calendrier du médecin choisi
+    return redirect('rendezvous:calendrier', medecin_id=medecin_id)
+@login_required
+@login_required
+def prendre_rendezvous(request, dispo_id):
+    dispo = get_object_or_404(Disponibilite, id=dispo_id)
+    
+    # Vérifie si un rendez-vous existe déjà pour cette dispo
+    if RendezVous.objects.filter(disponibilite=dispo).exists():
+        messages.error(request, "Ce créneau est déjà réservé.")
+        return redirect('rendezvous:choisir_medecin')  # ou la page calendrier
+
+    rdv = RendezVous.objects.create(
+        patient=request.user,
+        disponibilite=dispo
+    )
+
+    # marque la dispo comme non-disponible
+    dispo.disponible = False
+    dispo.save()
+
+    messages.success(request, "Rendez-vous pris avec succès !")
+    return redirect('rendezvous:mes_rendezvous')
+def mark_as_read(request, notif_id):
+    return redirect('rendezvous:get_notifications')
+
+def mark_all_read(request):
+    return redirect('rendezvous:get_notifications')
+@login_required
+def calendrier(request, medecin_id=None):
+    if medecin_id is None:
+        # Si aucun médecin choisi, prendre le premier
+        medecin = User.objects.filter(role='medecin').first()
+    else:
+        medecin = get_object_or_404(User, id=medecin_id, role='medecin')
+
+    return render(request, 'rendezvous/calendrier.html', {'medecin': medecin})
+@login_required
+def disponibilite_patient_json(request, medecin_id):
+    medecin = get_object_or_404(User, id=medecin_id, role='medecin')
+    slots = Disponibilite.objects.filter(medecin=medecin, disponible=True)
+
+    events = []
+    for slot in slots:
+        events.append({
+            'id': slot.id,
+            'title': f"{slot.medecin.get_full_name()}",  # parenthèses !
+            'start': f"{slot.date}T{slot.heure_debut}",
+            'end': f"{slot.date}T{slot.heure_fin}",
+        })
+    return JsonResponse(events, safe=False)

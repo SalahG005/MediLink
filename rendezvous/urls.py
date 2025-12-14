@@ -1,20 +1,28 @@
 #ADDED THIS URLLLLLLLLL
 from django.urls import path
+from disponibilite.views import DisponibiliteJson  # pour le médecin côté admin/medecin
 from . import views
+
+# ✅ Ajouter l'import de la fonction côté patient
+from .views import disponibilite_patient_json
 
 app_name = 'rendezvous'  # ✅ AJOUTE CETTE LIGNE
 
 urlpatterns = [
-    path('calendrier/', views.calendrier, name='calendrier'),
+    path('json/patient/<int:medecin_id>/', disponibilite_patient_json, name='disponibilite_json_patient'),
+
+    path('calendrier/<int:medecin_id>/', views.calendrier, name='calendrier'),
+path('calendrier/', views.calendrier, name='calendrier'),
+    path('json/<int:medecin_id>/', DisponibiliteJson.as_view(), name='disponibilite_json'),
+
     # étape 1 → choisir un médecin
     path('choisir-medecin/', views.choisir_medecin, name='choisir_medecin'),
     # étape 2 → voir les créneaux pour le médecin choisi
     path('medecin/<int:medecin_id>/slots/', views.medecin_slots, name='medecin_slots'),
-    path('prendre/<int:slot_id>/', views.prendre_rendezvous, name='prendre_rendezvous'),
     path('mes-rendezvous/', views.mes_rendezvous, name='mes_rendezvous'),
     path('annuler/<int:rdv_id>/', views.annuler_rendezvous, name='cancel_rdv'),
     path('modifier/<int:rdv_id>/', views.modifier_rendezvous, name='modifier_rendezvous'),
-    
+path('prendre/<int:dispo_id>/', views.prendre_rendezvous, name='prendre_rendezvous'),
         # 🔹 Côté médecin
     path('medecin/annuler/<int:rdv_id>/', views.medecin_annuler_rdv, name='medecin_annuler_rdv'),
     path('medecin/valider/<int:rdv_id>/', views.medecin_valider_rdv, name='medecin_valider_rdv'),

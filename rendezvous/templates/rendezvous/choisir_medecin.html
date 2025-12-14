@@ -10,29 +10,36 @@
 {% endblock %}
 
 {% block content %}
-<div class="mt-5 pt-4">
+<div class="container mt-5 pt-4">
     <h2 class="mb-4">Choisissez un médecin</h2>
 
-    <div class="row g-3">
-        {% for item in medecins %}
-            {% with med=item.medecin %}
-            <div class="col-md-4">
-                <div class="card h-100 shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">{{ med.first_name }} {{ med.last_name }}</h5>
-                        <p class="card-text">Spécialité: {{ med.specialite.name|default:med.specialite }}</p>
-                        <p class="text-muted mb-2">Créneaux disponibles: <strong>{{ item.available_count }}</strong></p>
-                        <a href="{% url 'rendezvous:medecin_slots' med.id %}" class="btn btn-primary">Voir les créneaux</a>
+    {% if medecins %}
+        <div class="row g-3">
+            {% for item in medecins %}
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="card-title">Dr. {{ item.medecin.get_full_name }}</h5>
+                            <p class="card-text">Spécialité: {{ item.medecin.specialite }}</p>
+                            <p class="card-text">Créneaux disponibles: {{ item.available_count }}</p>
+                        </div>
+                        <div class="mt-3 text-end">
+                            <a href="{% url 'rendezvous:medecin_slots' item.medecin.id %}" class="btn btn-primary">
+                                Voir créneaux
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
-            {% endwith %}
-        {% empty %}
-            <div class="col-12">
-                <div class="alert alert-info">Aucun médecin disponible pour le moment.</div>
-            </div>
-        {% endfor %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-warning">Aucun médecin disponible pour le moment.</div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{% url 'acceuil_patient' %}" class="btn btn-outline-secondary">← Retour à l'accueil</a>
     </div>
 </div>
-
 {% endblock %}

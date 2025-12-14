@@ -25,8 +25,18 @@ def sync_profiles_with_user(sender, instance, created, **kwargs):
 
     elif role == 'medecin':
         defaults = {
-            'specialite': getattr(instance, 'specialite', ''),
+            'specialite': getattr(instance, 'specialite', None),
             'telephone': getattr(instance, 'phone', ''),
         }
-        Medecin.objects.update_or_create(user=instance, defaults=defaults)
+        # Utiliser get_or_create pour s'assurer que created est correctement retourné
+        medecin, created = Medecin.objects.get_or_create(
+            user=instance,
+            defaults=defaults
+        )
+        # Si le profil existe déjà, mettre à jour les champs
+        if not created:
+            for key, value in defaults.items():
+                if value:
+                    setattr(medecin, key, value)
+            medecin.save()
 

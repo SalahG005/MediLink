@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'specialite',
     'rendezvous',
     'disponibilite',
+    'dashboard',
+    
 ]
 
 MIDDLEWARE = [

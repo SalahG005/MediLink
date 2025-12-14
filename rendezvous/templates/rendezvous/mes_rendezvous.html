@@ -180,7 +180,8 @@ h2 {
                 {% for rdv in mes_rdv %}
                     <div class="list-group-item d-flex justify-content-between align-items-center">
                         <div>
-                            <h5 class="mb-1">{{ rdv.slot.date|date:"d M Y à H:i" }}</h5>
+                            <h5 class="mb-1">{{ rdv.disponibilite.date|date:"Y-m-d" }} {{ rdv.disponibilite.heure_debut|time:"H:i" }}
+</h5>
                             <span class="badge 
                                 {% if rdv.status == 'pending' %} bg-info text-dark
                                 {% elif rdv.status == 'confirmed' %} bg-success

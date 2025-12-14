@@ -1,15 +1,17 @@
-from django.shortcuts import render, redirect
-from .forms import PatientSignUpForm, MedecinSignUpForm
-from django.contrib.auth import authenticate, login, logout
-from django.views.generic.edit import DeleteView
-from .forms import PatientSignUpForm, MedecinSignUpForm, PatientUpdateForm, LoginForm
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from gestion_medecins.models import Medecin
-from specialite.models import Specialite
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic.edit import UpdateView, DeleteView
+
+from .forms import PatientSignUpForm, MedecinSignUpForm, PatientUpdateForm, LoginForm
+from .models import User
+from gestion_medecins.models import Medecin
+from specialite.models import Specialite
 
 
 # Page d'accueil
@@ -60,7 +62,7 @@ def signin(request):
             if role == 'patient':
                 return redirect('acceuil_patient')
             elif role == 'medecin':
-                return redirect('dossiers:liste_dossiers')
+                return redirect('dashboard:dashboard_medecin')
             elif role == 'admin':
                 return redirect('acceuil_admin')
 
@@ -78,15 +80,9 @@ def logout_view(request):
 def acceuil_patient(request):
     return render(request, 'users/acceuil_patient.html')
 
+
 def acceuil_medecin(request):
-    return render(request, 'users/acceuil_medecin.html')
-
-
-from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic.edit import UpdateView
-from .models import User
-from .forms import PatientUpdateForm
+    return render(request, 'dashboard:dashboard_medecin')
 
 class PatientUpdateView(LoginRequiredMixin, UpdateView):
     model = User
@@ -165,21 +161,9 @@ def reactiver_patient(request, pk):
         patient.save()
     return redirect('acceuil_admin')
 
-@property
-def is_medecin(self):
-    return self.role == 'medecin'
-@property
-def is_patient(self):
-    return self.role == 'patient'
-
-@property
-def is_admin(self):
-    return self.role == 'admin'
-
-from specialite.models import Specialite
-
 @login_required
 def liste_medecins(request):
+    """Liste uniquement les médecins validés + recherche + pagination avec filtres avancés"""
 
     medecins = Medecin.objects.filter(
         statut='valide'
@@ -242,14 +226,35 @@ def liste_medecins(request):
     context = {
         'medecins': page_obj,
         'search_query': search_query,
-
         'specialite_filter': specialite_filter,
         'gouvernorat_filter': gouvernorat_filter,
         'ville_filter': ville_filter,
-
         'specialites': Specialite.objects.all(),
         'gouvernorats': gouvernorats,
         'villes': villes,
     }
 
     return render(request, 'liste_medecins.html', context)
+
+@login_required
+def dashboard_admin(request):
+    if not hasattr(request.user, 'role') or request.user.role != 'admin':
+        return redirect('home')
+
+    # Statistiques
+    nb_patients_actifs = User.objects.filter(role='patient', etat_compte='actif').count()
+    nb_patients_archives = User.objects.filter(role='patient', etat_compte='archive').count()
+    nb_medecins_valide = Medecin.objects.filter(statut='valide').count()
+    nb_medecins_en_attente = Medecin.objects.filter(statut='en_attente').count()
+    nb_specialites = Specialite.objects.count()
+
+    context = {
+        'nb_patients_actifs': nb_patients_actifs,
+        'nb_patients_archives': nb_patients_archives,
+        'nb_medecins_valide': nb_medecins_valide,
+        'nb_medecins_en_attente': nb_medecins_en_attente,
+        'nb_specialites': nb_specialites,
+        'medecins_en_attente': Medecin.objects.filter(statut='en_attente').select_related('user')
+    }
+
+    return render(request, 'users/dashboard_admin.html', context)
