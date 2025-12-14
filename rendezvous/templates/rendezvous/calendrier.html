@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Calendrier des Rendez-vous{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-primary" href="{% url 'acceuil_patient' %}">🏥 MediLink</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item"><a class="nav-link" href="{% url 'acceuil_patient' %}">Accueil</a></li>
+                <li class="nav-item"><a class="nav-link active" href="{% url 'rendezvous:calendrier' medecin.id %}">Calendrier</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'rendezvous:mes_rendezvous' %}">Mes Rendez-vous</a></li>
+                <li class="nav-item"><a class="nav-link text-danger" href="{% url 'logout' %}">Déconnexion</a></li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container py-5" style="margin-top:80px;">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-4">
+            <h2 class="text-center mb-4 fw-bold text-primary">
+                Créneaux disponibles pour {{ medecin.get_full_name }}
+            </h2>
+
+            <!-- Calendrier -->
+            <div id="calendar"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+
+    // Initialiser FullCalendar
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        events: [],
+
+        // Gestion du clic sur un créneau
+        eventClick: function(info) {
+            const confirmed = confirm("Voulez-vous prendre rendez-vous à ce créneau ?");
+            if (confirmed) {
+                window.location.href = info.event.url;
+            }
+        }
+    });
+
+    calendar.render();
+
+    // Charger les disponibilités automatiquement pour le médecin
+   function loadDisponibilites(medecinId) {
+    fetch(`/rendezvous/json/patient/${medecinId}/`)
+        .then(res => res.json())
+        .then(data => {
+            calendar.removeAllEvents();
+            data.forEach(event => {
+                event.url = `/rendezvous/prendre/${event.id}/`; // redirige vers la prise de RDV
+            });
+            calendar.addEventSource(data);
+        })
+        .catch(err => console.error("Erreur fetch disponibilités :", err));
+}
+
+// Appel initial pour le médecin actuel
+loadDisponibilites({{ medecin.id }});
+
+});
+</script>
+
+<style>
+#calendar {
+    max-width: 900px;
+    margin: 0 auto;
+    height: 600px;
+}
+</style>
+{% endblock %}

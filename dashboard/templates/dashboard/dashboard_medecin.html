@@ -1,0 +1,248 @@
+{% load static %}
+
+<!DOCTYPE html>
+
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Médecin</title>
+
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Flatpickr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+<!-- Custom CSS -->
+<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
+
+<style>
+    body { background: #f5f6fa; font-family: 'Segoe UI', sans-serif; }
+    .dashboard-container { padding: 20px; }
+    .dashboard-header h2 { margin: 0; }
+    .dashboard-header .avatar { width: 40px; height: 40px; }
+    .card { border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+
+    /* Calendrier + liste */
+    .appointments-container {
+        max-height: 450px;
+        overflow-y: auto;
+    }
+    #appointments-table tbody tr:hover { background-color: #e9f5ff; cursor: pointer; }
+
+    /* Graphiques */
+    .charts-container { display: flex; flex-direction: column; gap: 20px; }
+
+    /* Scrollbar */
+    .appointments-container::-webkit-scrollbar { width: 6px; }
+    .appointments-container::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.2); border-radius: 3px; }
+</style>
+
+
+</head>
+<body>
+    <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top navbar-light bg-light shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="{% url 'signin' %}">🏥 MediLink </a>
+            
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <div class="navbar-nav ms-auto">
+                    {% if request.user.is_authenticated %}
+                        {% if request.user.role == 'admin' %}
+                            <a class="nav-link" href="{% url 'acceuil_admin' %}">Dashboard</a>
+                            <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                            <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
+                        {% else %}
+                            <a class="nav-link" href="{% url 'dossiers:liste_dossiers' %}">Dossiers</a>
+                            <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
+                            <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                            <a class="nav-link" href="{% url 'disponibilite:calendar' %}">Disponibilité</a>
+                            <a class="nav-link" href="{% url 'rendezvous:medecin_liste_rdv' %}">Rendez-vous</a>
+                        {% endif %}
+                        <a class="nav-link text-danger" href="{% url 'signin' %}">Se déconnecter</a>
+                    {% else %}
+                        <a class="nav-link" href="{% url 'signin' %}">Connexion</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+   
+<div class="dashboard-container">
+
+<!-- HEADER -->
+
+
+<!-- STATS --><div class="container">
+    <div class="row g-3 mb-4 stats-row">
+        <div class="col-md-3"><div class="card p-3 text-center"><h6>Total Patients Aujourd'hui</h6><h3>{{ stats.total_patients }}</h3></div></div>
+        <div class="col-md-3"><div class="card p-3 text-center"><h6>En attente</h6><h3>{{ stats.patients_en_attente }}</h3></div></div>
+        <div class="col-md-3"><div class="card p-3 text-center"><h6>Reportés</h6><h3>{{ stats.patients_reportes }}</h3></div></div>
+        <div class="col-md-3"><div class="card p-3 text-center"><h6>Annulés</h6><h3>{{ stats.patients_annules }}</h3></div></div>
+    </div>
+</div>
+
+
+<div class="row g-4">
+
+    <!-- CALENDRIER + LISTE -->
+    <div class="col-lg-8">
+        <div class="row g-3">
+
+            <!-- Calendrier -->
+            <div class="col-md-4">
+                <div class="card p-3 h-100">
+                    <h5>Calendrier</h5>
+                    <input id="mini-calendar" type="text" />
+                    <button id="show-today" class="btn btn-outline-primary btn-sm mt-2 w-100">Aujourd'hui</button>
+                </div>
+            </div>
+
+            <!-- Liste RDV -->
+            <div class="col-md-8">
+                <div class="card p-3 appointments-container h-100">
+                    <h5>Liste des Rendez-vous</h5>
+                    <table class="table table-hover" id="appointments-table">
+                        <thead>
+                            <tr>
+                                <th>Patient</th>
+                                <th>Créneau</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rdv in rdvs %}
+<tr data-date="{{ rdv.disponibilite.date|date:'Y-m-d' }}" data-hour="{{ rdv.disponibilite.heure_debut|time:'H' }}">
+                                <td>{{ rdv.patient.get_full_name }}</td>
+<td>{{ rdv.disponibilite.date|date:"d/m/Y" }} — {{ rdv.disponibilite.heure_debut|time:"H:i" }} à {{ rdv.disponibilite.heure_fin|time:"H:i" }}</td>
+                                <td>
+                                    {% if rdv.status == 'pending' %}
+                                        <span class="badge bg-warning">En attente</span>
+                                    {% elif rdv.status == 'confirmed' %}
+                                        <span class="badge bg-success">Confirmé</span>
+                                    {% elif rdv.status == 'canceled' %}
+                                        <span class="badge bg-danger">Annulé</span>
+                                    {% elif rdv.status == 'rescheduled' %}
+                                        <span class="badge bg-info">Reporté</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3">Aucun rendez-vous</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- GRAPHIQUES -->
+    <div class="col-lg-4 charts-container">
+        <div class="card p-3">
+            <h5>Rendez-vous par statut</h5>
+            <canvas id="statusChart" height="180"></canvas>
+        </div>
+
+        <div class="card p-3">
+            <h5>Plages horaires les plus sollicitées</h5>
+            <canvas id="hourChart" height="180"></canvas>
+        </div>
+    </div>
+
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const rows = document.querySelectorAll('#appointments-table tbody tr');
+
+const calendar = flatpickr("#mini-calendar", {
+    inline: true,
+    defaultDate: "{{ today }}",
+    onChange: (selectedDates, dateStr) => applyFilters(dateStr)
+});
+
+document.getElementById("show-today").addEventListener("click", () => {
+    const today = "{{ today }}";
+    calendar.setDate(today);
+    applyFilters(today);
+});
+
+function filterRows(dateStr) {
+    rows.forEach(row => row.style.display = row.dataset.date === dateStr ? "" : "none");
+}
+
+const statusChart = new Chart(document.getElementById("statusChart"), {
+    type: "bar",
+    data: {
+        labels: ["En attente", "Confirmé", "Annulé", "Reporté"],
+        datasets: [{ label: "Nombre", data: [0,0,0,0], backgroundColor: ["#ffc107","#198754","#dc3545","#0dcaf0"] }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+});
+
+function updateStatusChart(dateStr) {
+    let counts = { pending:0, confirmed:0, canceled:0, rescheduled:0 };
+    rows.forEach(row => {
+        if(row.dataset.date === dateStr){
+            const status = row.querySelector("span").textContent.toLowerCase();
+            if(status.includes("attente")) counts.pending++;
+            if(status.includes("confirm")) counts.confirmed++;
+            if(status.includes("annul")) counts.canceled++;
+            if(status.includes("report")) counts.rescheduled++;
+        }
+    });
+    statusChart.data.datasets[0].data = [counts.pending, counts.confirmed, counts.canceled, counts.rescheduled];
+    statusChart.update();
+}
+
+const hourLabels = ["08h","09h","10h","11h","12h","13h","14h","15h","16h","17h"];
+const hourChart = new Chart(document.getElementById("hourChart"), {
+    type:"bar",
+    data:{ labels: hourLabels, datasets:[{ label:"Nombre de RDV", data:Array(10).fill(0), backgroundColor:"#0d6efd" }]},
+    options:{ responsive:true, plugins:{ legend:{ display:false } } }
+});
+
+function updateHourChart(dateStr){
+    let hourCounts = Array(10).fill(0);
+    rows.forEach(row=>{
+        if(row.dataset.date===dateStr){
+            const index = parseInt(row.dataset.hour)-8;
+            if(index>=0 && index<10) hourCounts[index]++;
+        }
+    });
+    hourChart.data.datasets[0].data = hourCounts;
+    hourChart.update();
+}
+
+function applyFilters(dateStr){
+    filterRows(dateStr);
+    updateStatusChart(dateStr);
+    updateHourChart(dateStr);
+}
+
+applyFilters("{{ today }}");
+</script>
+
+</body>
+</html>

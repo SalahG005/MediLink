@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% block title %}Reporter Rendez-vous{% endblock %}
+{% load static %}
+{% block content %}
+
+<!-- Styles -->
+<style>
+body {
+    padding-top: 70px;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #f3f9ff, #e0f0ff);
+    min-height: 100vh;
+    color: #1b1c74;
+}
+.navbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.navbar .nav-link { color: #1b1c74; font-weight: 500; }
+.navbar .nav-link:hover { color: #272894; }
+.navbar .text-danger:hover { color: #b30000; }
+
+/* Card container */
+.table-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 18px;
+    padding: 25px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.05);
+}
+
+/* Table */
+.table-card table {
+    width: 100%;
+}
+.table-card th {
+    background: #f0f4ff;
+    color: #1b1c74;
+    font-weight: 600;
+}
+.table-card td, .table-card th {
+    vertical-align: middle;
+    padding: 12px;
+    font-size: 0.95rem;
+}
+.table-card tbody tr:hover {
+    background: #f9fbff;
+}
+
+/* Buttons */
+.btn-submit {
+    background: linear-gradient(90deg, #1b1c74, #272894);
+    color: white;
+    border-radius: 50px;
+    padding: 8px 18px;
+    border: none;
+    transition: 0.3s;
+}
+.btn-submit:hover {
+    transform: scale(1.05);
+}
+
+/* Cancel link */
+.cancel-link {
+    margin-left: 10px;
+    color: #b30000;
+    text-decoration: none;
+}
+.cancel-link:hover {
+    text-decoration: underline;
+}
+</style>
+
+<!-- Navbar (comme pour la liste) -->
+<nav class="navbar navbar-expand-lg fixed-top navbar-light bg-light shadow-sm">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-primary" href="{% url 'signin' %}">🏥 MediLink</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <div class="navbar-nav ms-auto">
+                {% if request.user.is_authenticated %}
+                    {% if request.user.role == 'admin' %}
+                        <a class="nav-link" href="{% url 'acceuil_admin' %}">Dashboard</a>
+                        <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                        <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
+                    {% else %}
+                        <a class="nav-link" href="{% url 'dossiers:liste_dossiers' %}">Dossiers</a>
+                        <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
+                        <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                        <a class="nav-link" href="{% url 'disponibilite:calendar' %}">Disponibilité</a>
+                        <a class="nav-link" href="{% url 'rendezvous:medecin_liste_rdv' %}">Rendez-vous</a>
+                    {% endif %}
+                    <a class="nav-link text-danger" href="{% url 'signin' %}">Se déconnecter</a>
+                {% else %}
+                    <a class="nav-link" href="{% url 'signin' %}">Connexion</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-4 table-card">
+    <h1 class="mb-4">Reporter le rendez-vous</h1>
+    <p><strong>Patient :</strong> {{ rdv.patient.get_full_name }}</p>
+    <p><strong>Date actuelle :</strong> {{ rdv.slot.date|date:"Y-m-d H:i" }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="new_slot_id" class="form-label">Choisir un nouveau créneau :</label>
+            <select id="new_slot_id" name="new_slot_id" class="form-select" required>
+                {% for slot in available_slots %}
+                    <option value="{{ slot.id }}">{{ slot.date|date:"Y-m-d H:i" }}</option>
+                {% empty %}
+                    <option disabled>Aucun créneau disponible</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn-submit">Reporter</button>
+        <a href="{% url 'rendezvous:medecin_liste_rdv' %}" class="cancel-link">Annuler</a>
+    </form>
+</div>
+
+{% endblock %}

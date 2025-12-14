@@ -1,0 +1,58 @@
+{% extends 'dossiers/base.html' %}
+
+{% block title %}Liste des Dossiers Médicaux{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Dossiers Médicaux</h2>
+    <a href="{% url 'dossiers:ajouter_dossier' %}" class="btn btn-primary">Ajouter un dossier</a>
+</div>
+
+<form method="get" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="search" class="form-control" placeholder="Rechercher par nom de patient..." value="{{ search_query }}">
+        <button class="btn btn-outline-secondary" type="submit">Rechercher</button>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Patient</th>
+            <th>Date de consultation</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for dossier in dossiers %}
+        <tr>
+            <td>{{ dossier.patient.user.get_full_name|default:dossier.patient.user.email }}</td>
+            <td>{{ dossier.date_consultation|date:"d/m/Y H:i" }}</td>
+            <td>
+                <a href="{% url 'dossiers:consulter_dossier' dossier.id %}" class="btn btn-sm btn-info">Consulter</a>
+                <a href="{% url 'dossiers:modifier_dossier' dossier.id %}" class="btn btn-sm btn-warning">Modifier</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3" class="text-center">Aucun dossier médical trouvé.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% if dossiers.has_other_pages %}
+<nav>
+    <ul class="pagination">
+        {% if dossiers.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ dossiers.previous_page_number }}">Précédent</a></li>
+        {% endif %}
+        <li class="page-item active"><span class="page-link">{{ dossiers.number }} / {{ dossiers.paginator.num_pages }}</span></li>
+        {% if dossiers.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ dossiers.next_page_number }}">Suivant</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+

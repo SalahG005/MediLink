@@ -1,0 +1,184 @@
+{% extends 'dossiers/base.html' %}
+{% load static %}
+
+{% block title %}Gestion des Médecins{% endblock %}
+
+{% block content %}
+
+<style>
+    .custom-card {
+        width: 100%;
+        max-width: 1200px;   /* bigger content width */
+        margin: auto;        /* center the container */
+        background: white;
+        border-radius: 1.5rem;
+        padding: 40px;
+        box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+    }
+
+
+    .table-style {
+        width: 100%;
+        margin-top: 25px;
+        border-radius: 12px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    }
+
+    .table-style th {
+        background: #f3f7ff;
+        padding: 14px;
+        text-align: center;
+        font-weight: 600;
+        color: #1b1c74;
+    }
+
+    .table-style td {
+        padding: 14px;
+        text-align: center;
+        color: #444;
+    }
+
+    .filter-box {
+        background: #fff;
+        padding: 20px;
+        border-radius: 12px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.06);
+    }
+
+    /* SIMPLE PRETTY BUTTONS */
+    .btn-clean {
+        border: none;
+        padding: 7px 16px;
+        font-size: 0.85rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+
+    .btn-details {
+        background: #e8f1ff;
+        color: #1b4ed8;
+        border: 1px solid #cfe0ff;
+    }
+    .btn-details:hover {
+        background: #dbe9ff;
+    }
+
+    .btn-validate {
+        background: #e8f9f0;
+        color: #198754;
+        border: 1px solid #c9f2da;
+    }
+    .btn-validate:hover {
+        background: #d9f5e5;
+    }
+
+    .btn-refuse {
+        background: #ffecec;
+        color: #dc3545;
+        border: 1px solid #ffdad9;
+    }
+    .btn-refuse:hover {
+        background: #ffd3d1;
+    }
+
+</style>
+
+<div class="custom-card">
+
+    <h2 class="mb-4 text-center">Gestion des Médecins</h2>
+
+    <!-- Search + Filter -->
+    <div class="filter-box mb-4">
+        <form method="get">
+            <div class="row g-3">
+
+                <div class="col-md-5">
+                    <input type="text" name="search" class="form-control"
+                           placeholder="Rechercher..." value="{{ search_query }}">
+                </div>
+
+                <div class="col-md-5">
+                    <select name="statut" class="form-select">
+                        <option value="">Tous les statuts</option>
+                        {% for value, label in statut_choices %}
+                            <option value="{{ value }}" {% if statut_filter == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-2">
+                    <button class="btn btn-primary w-100">Filtrer</button>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <table class="table-style">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Spécialité</th>
+                <th>N° d'ordre</th>
+                <th>Statut</th>
+                <th>Date inscription</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for medecin in medecins %}
+            <tr>
+                <td>{{ medecin.user.get_full_name }}</td>
+                <td>{{ medecin.specialite }}</td>
+                <td>{{ medecin.numero_ordre }}</td>
+
+                <td>
+                    <span class="badge bg-{% if medecin.statut == 'valide' %}success{% elif medecin.statut == 'refuse' %}danger{% else %}warning{% endif %}">
+                        {{ medecin.get_statut_display }}
+                    </span>
+                </td>
+
+                <td>{{ medecin.date_inscription|date:"d/m/Y" }}</td>
+
+                <td class="d-flex gap-2 justify-content-center">
+
+                    <!-- DETAILS -->
+                    <a href="{% url 'gestion_medecins:detail_medecin' medecin.id %}"
+                       class="btn-clean btn-details">
+                        Détails
+                    </a>
+
+                    {% if medecin.statut == 'en_attente' %}
+
+                        <!-- VALIDATE -->
+                        <form method="post" action="{% url 'gestion_medecins:valider_medecin' medecin.id %}">
+                            {% csrf_token %}
+                            <button class="btn-clean btn-validate">Valider</button>
+                        </form>
+
+                        <!-- REFUSE -->
+                        <form method="post" action="{% url 'gestion_medecins:refuser_medecin' medecin.id %}">
+                            {% csrf_token %}
+                            <button class="btn-clean btn-refuse">Refuser</button>
+                        </form>
+
+                    {% endif %}
+                </td>
+            </tr>
+
+            {% empty %}
+            <tr><td colspan="6">Aucun médecin trouvé.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

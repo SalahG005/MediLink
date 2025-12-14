@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Choisir un médecin{% endblock %}
+
+{% block navbar %}
+<li class="nav-item"><a class="nav-link" href="{% url 'acceuil_patient' %}">Accueil</a></li>
+<li class="nav-item"><a class="nav-link" href="{% url 'rendezvous:mes_rendezvous' %}">Mes Rendez-vous</a></li>
+<li class="nav-item"><a class="nav-link active" aria-current="page" href="#">Prendre un rendez-vous</a></li>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <h2 class="mb-4">Choisissez un médecin</h2>
+
+    {% if medecins %}
+        <div class="row g-3">
+            {% for item in medecins %}
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <div>
+                            <h5 class="card-title">Dr. {{ item.medecin.get_full_name }}</h5>
+                            <p class="card-text">Spécialité: {{ item.medecin.specialite }}</p>
+                            <p class="card-text">Créneaux disponibles: {{ item.available_count }}</p>
+                        </div>
+                        <div class="mt-3 text-end">
+                            <a href="{% url 'rendezvous:medecin_slots' item.medecin.id %}" class="btn btn-primary">
+                                Voir créneaux
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-warning">Aucun médecin disponible pour le moment.</div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{% url 'acceuil_patient' %}" class="btn btn-outline-secondary">← Retour à l'accueil</a>
+    </div>
+</div>
+{% endblock %}

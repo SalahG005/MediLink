@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Prendre un rendez-vous{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+   <h2>Réserver le créneau</h2>
+<p>Dr. {{ slot.medecin.get_full_name }}</p>
+<p>Date: {{ slot.date|date:"d/m/Y" }}</p>
+<p>Heure: {{ slot.heure_debut|time:"H:i" }} à {{ slot.heure_fin|time:"H:i" }}</p>
+
+<form method="POST">
+  {% csrf_token %}
+  <button type="submit">Confirmer le rendez-vous</button>
+</form>
+
+<a href="{% url 'rendezvous:medecin_slots' slot.medecin.id %}">← Retour aux créneaux</a>
+
+        </form>
+    </div>
+</div>
+{% endblock %}

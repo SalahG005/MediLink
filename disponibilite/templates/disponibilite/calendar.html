@@ -1,0 +1,306 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendrier Pro des disponibilités</title>
+
+    <!-- FullCalendar CSS & JS -->
+    <link href="{% static 'fullcalendar/index.global.min.css' %}" rel="stylesheet">
+    <link href="{% static 'fullcalendar/calendar.css' %}" rel="stylesheet">
+    <script src="{% static 'fullcalendar/index.global.min.js' %}"></script>
+
+    <!-- Bootstrap CSS & JS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- CSS perso -->
+    <link href="{% static 'css/calendar.css' %}" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f3f9ff, #e0f0ff);
+            min-height: 100vh;
+            padding-top: 70px;
+            color: #1b1c74;
+        }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .navbar .nav-link {
+            color: #1b1c74;
+            font-weight: 500;
+        }
+        .navbar .nav-link:hover { color: #272894; }
+        .navbar .text-danger:hover { color: #b30000; }
+
+        .calendar-container {
+            max-width: 1100px;
+            margin: 50px auto;
+        }
+
+        h1, .modal-title {
+            color: #1b1c74;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .modal-content {
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+
+        input.form-control, textarea.form-control, select.form-control {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+        }
+        input.form-control:focus, textarea.form-control:focus, select.form-control:focus {
+            border-color: #70a1ff;
+            box-shadow: 0 0 8px rgba(112,161,255,0.3);
+        }
+
+        .btn-primary, .btn-secondary, .btn-danger {
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary { background-color: #70a1ff; border-color: #70a1ff; color: #fff; }
+        .btn-primary:hover { background-color: #4c8bf5; border-color: #4c8bf5; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .btn-secondary { background-color: #dbe6ff; border-color: #dbe6ff; color: #3b5998; font-weight: 500; }
+        .btn-secondary:hover { background-color: #c1d4ff; color: #2a4475; }
+        .btn-danger { background-color: #ff7f7f; border-color: #ff7f7f; color: #fff; }
+        .btn-danger:hover { background-color: #e05555; border-color: #e05555; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+        @media (max-width: 768px) {
+            #calendar { height: 500px; }
+            .modal-dialog { max-width: 90%; }
+        }
+
+        /* Cacher les titres des événements */
+        .fc-event-title { display: none !important; }
+        /* ===== Button Styling ===== */
+/* ===== Button Styling ===== */
+.btn-custom {
+    background: linear-gradient(90deg, #1b1c74, #272894);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 8px 20px;       /* moins de padding = bouton plus petit */
+    cursor: pointer;
+    font-size: 1rem;          /* police légèrement plus petite */
+    font-weight: 600;
+    transition: 0.3s;
+}
+
+.btn-custom:hover {
+    background: linear-gradient(90deg, #272894, #1b1c74);
+    transform: scale(1.05);
+}
+
+
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-primary" href="{% url 'home' %}">🏥 MediLink</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <div class="navbar-nav ms-auto">
+                {% if request.user.is_authenticated %}
+                    {% if request.user.role == 'admin' %}
+                        <a class="nav-link" href="{% url 'gestion_medecins:liste_medecins' %}">Médecins</a>
+                    {% else %}
+                        <a class="nav-link" href="{% url 'dossiers:liste_dossiers' %}">Dossiers</a>
+                        <a class="nav-link" href="{% url 'dossiers:liste_patients' %}">Patients</a>
+                        <a class="nav-link" href="{% url 'disponibilite:calendar' %}">Disponibilité</a>
+                    {% endif %}
+                    <a class="nav-link text-danger" href="{% url 'logout' %}">Se déconnecter</a>
+                {% else %}
+                    <a class="nav-link" href="{% url 'signin' %}">Connexion</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<h1 class="mt-4">Calendrier Pro des disponibilités</h1>
+<div class="calendar-container">
+    <div id="calendar"></div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Modifier le créneau</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="modalDate" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="modalDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalStart" class="form-label">Heure de début</label>
+                        <input type="time" class="form-control" id="modalStart" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="modalEnd" class="form-label">Heure de fin</label>
+                        <input type="time" class="form-control" id="modalEnd" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-custom">Enregistrer</button>
+<button type="button" class="btn btn-custom" data-bs-dismiss="modal">Annuler</button>
+<button type="button" class="btn btn-custom" id="deleteEventBtn">Supprimer</button>
+
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    let selectedEvent = null;
+    let addMode = false;
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'timeGridWeek',
+        locale: 'fr',
+        nowIndicator: true,
+        selectable: true,
+        editable: true,
+        slotMinTime: "08:00:00",
+        slotMaxTime: "20:00:00",
+        slotDuration: "00:15:00", // créneaux de 15 min
+        allDaySlot: false,
+        eventDisplay: 'block',
+        eventClassNames: function(arg) { return ['custom-fc-event']; },
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+events: '/disponibilite/json/',
+        select: function(info) {
+            addMode = true;
+            selectedEvent = null;
+            const dateStr = info.startStr.slice(0,10);
+            const weekday = info.start.getDay();
+            const holidays = {"2025-01-01":"Nouvel An","2025-03-20":"Indépendance","2025-07-25":"Révolution"};
+            if(weekday===0||(weekday===6 && info.start.getHours()>=14)){ 
+                alert("Ajout interdit le week-end !"); 
+                calendar.unselect(); 
+                return; 
+            }
+            if(holidays[dateStr]){ 
+                alert("Ajout interdit : " + holidays[dateStr]); 
+                calendar.unselect(); 
+                return; 
+            }
+            document.getElementById('modalDate').value = dateStr;
+            document.getElementById('modalStart').value = info.startStr.slice(11,16);
+            document.getElementById('modalEnd').value = info.endStr.slice(11,16);
+            let editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.show();
+            calendar.unselect();
+        },
+        eventClick: function(info) {
+            addMode = false;
+            selectedEvent = info.event;
+            document.getElementById('modalDate').value = info.event.startStr.slice(0,10);
+            document.getElementById('modalStart').value = info.event.startStr.slice(11,16);
+            document.getElementById('modalEnd').value = info.event.endStr.slice(11,16);
+            let editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.show();
+        },
+        eventDrop: function(info) {
+            fetch(`/disponibilite/update/${info.event.id}/`, {
+                method: 'POST',
+                headers: {'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':'{{ csrf_token }}'},
+                body: `date=${info.event.startStr.slice(0,10)}&heure_debut=${info.event.startStr.slice(11,16)}&heure_fin=${info.event.endStr.slice(11,16)}`
+            }).then(()=> calendar.refetchEvents());
+        }
+    });
+
+    document.getElementById('editForm').addEventListener('submit', function(e){
+    e.preventDefault(); // empêche le submit HTML classique
+
+    let date = document.getElementById('modalDate').value;
+    let start = document.getElementById('modalStart').value;
+    let end = document.getElementById('modalEnd').value;
+
+    if(addMode){ // AJOUT
+        fetch('/disponibilite/add/', {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `date=${date}&heure_debut=${start}&heure_fin=${end}`
+        })
+        .then(r => r.json())
+        .then(data => {
+            if(data.status === 'ok'){
+                calendar.refetchEvents(); // rafraîchit le calendrier
+                bootstrap.Modal.getInstance(document.getElementById('editModal')).hide(); // ferme modal
+            } else {
+                alert(data.message);
+            }
+        }).catch(err => alert('Erreur lors de l’ajout: ' + err));
+    } else { // UPDATE
+        fetch(`/disponibilite/update/${selectedEvent.id}/`, {
+            method: 'POST',
+            headers:{
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body:`date=${date}&heure_debut=${start}&heure_fin=${end}`
+        })
+        .then(() => {
+            calendar.refetchEvents();
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+        }).catch(err => alert('Erreur update: ' + err));
+    }
+});
+
+
+    document.getElementById('deleteEventBtn').addEventListener('click', function(){
+        if(!selectedEvent) return;
+        let start=document.getElementById('modalStart').value;
+        let end=document.getElementById('modalEnd').value;
+        if(confirm(`Voulez-vous vraiment supprimer ce créneau de ${start} à ${end} ?`)){
+            fetch(`/disponibilite/delete/${selectedEvent.id}/`, {
+                method:'POST',
+                headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRFToken':'{{ csrf_token }}'},
+                body:`heure_debut=${start}&heure_fin=${end}`
+            }).then(()=>{
+                calendar.refetchEvents(); 
+                bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            });
+        }
+    });
+
+    calendar.render();
+});
+</script>
+
+</body>
+</html>

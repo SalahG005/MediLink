@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% block title %}Accueil Médecin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+	<div class="row">
+		<div class="col-md-8">
+			<h1 class="mb-3">Bienvenue, {{ request.user.get_full_name|default:request.user.email }} !</h1>
+			<p class="lead">Page d'accueil pour les médecins — résumé rapide de votre compte et actions courantes.</p>
+
+			<div class="card mt-4 shadow-sm">
+				<div class="card-body">
+					<h5 class="card-title">Rendez-vous</h5>
+					<p class="card-text">Consultez vos prochains rendez-vous et gérez-les depuis la page dédiée.</p>
+					<a class="btn btn-primary" href="{% url 'rendezvous:medecin_liste_rdv' %}">Voir mes rendez-vous</a>
+				</div>
+			</div>
+		</div>
+
+		<div class="col-md-4">
+			<!-- Notifications card -->
+			<div class="card mt-2 shadow-sm">
+				<div class="card-header d-flex justify-content-between align-items-center">
+					<strong>Notifications</strong>
+					<div>
+						<button id="mark-all-btn" class="btn btn-sm btn-link">Tout marquer lu</button>
+						<span id="notif-badge" class="badge bg-danger" style="display:none">0</span>
+					</div>
+				</div>
+				<ul id="notifications-list" class="list-group list-group-flush" style="max-height:360px; overflow-y:auto;">
+					<li class="list-group-item text-center text-muted">Chargement...</li>
+				</ul>
+				<div class="card-footer text-muted small text-center">Cliquez sur une notification pour la marquer lue et ouvrir la page correspondante.</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script>
+function renderNotifications(items) {
+	const list = document.getElementById('notifications-list');
+	const badge = document.getElementById('notif-badge');
+	list.innerHTML = '';
+	let unread = 0;
+
+	if (!items || items.length === 0) {
+		list.innerHTML = '<li class="list-group-item text-center text-muted">Aucune notification</li>';
+		badge.style.display = 'none';
+		return;
+	}
+
+	items.forEach(n => {
+		if (!n.is_read) unread++;
+		const li = document.createElement('li');
+		li.className = 'list-group-item d-flex justify-content-between align-items-start ' + (n.is_read ? '' : 'fw-bold');
+		li.dataset.id = n.id;
+
+		const inner = document.createElement('div');
+		inner.innerHTML = `<div>${n.message}</div><small class='text-muted'>${n.created_at}</small>`;
+
+		const actions = document.createElement('div');
+		if (!n.is_read) {
+			const markBtn = document.createElement('button');
+			markBtn.className = 'btn btn-sm btn-outline-primary';
+			markBtn.textContent = 'Marquer lu';
+			markBtn.onclick = function(e){ e.preventDefault(); markAsRead(n.id, li); };
+			actions.appendChild(markBtn);
+		} else {
+			const badgeRead = document.createElement('span'); badgeRead.className = 'badge bg-secondary'; badgeRead.textContent = 'Lu'; actions.appendChild(badgeRead);
+		}
+
+		li.appendChild(inner);
+		li.appendChild(actions);
+		list.appendChild(li);
+
+		// Clicking notification goes to appointments page
+		li.addEventListener('click', function(e){
+			// If clicked on button, handler above will handle mark as read. Clicking elsewhere goes to medecin rendezvous.
+			if (e.target.tagName.toLowerCase() === 'button') return;
+			window.location.href = '{% url "rendezvous:medecin_liste_rdv" %}';
+		});
+	});
+
+	if (unread > 0) {
+		badge.style.display = 'inline-block';
+		badge.textContent = unread;
+	} else {
+		badge.style.display = 'none';
+	}
+}
+
+function loadNotifications(){
+	fetch('{% url "rendezvous:get_notifications" %}')
+		.then(res => res.json())
+		.then(data => {
+			renderNotifications(data.notifications);
+		}).catch(_=>{
+			const list = document.getElementById('notifications-list');
+			list.innerHTML = '<li class="list-group-item text-center text-danger">Impossible de charger</li>';
+		});
+}
+
+function markAsRead(id, liElem){
+	fetch(`/rendezvous/notifications/mark_read/${id}/`, { method: 'POST' })
+		.then(res => res.json())
+		.then(data => {
+			if (data.success) {
+				if (liElem) {
+					liElem.classList.remove('fw-bold');
+					const badge = liElem.querySelector('.badge');
+					if (!badge) {
+						const span = document.createElement('span'); span.className='badge bg-secondary'; span.textContent='Lu';
+						// remove any existing button
+						const btn = liElem.querySelector('button'); if (btn) btn.remove();
+						liElem.querySelector('div:last-child').appendChild(span);
+					}
+				}
+				// refresh badge count
+				loadNotifications();
+			}
+		});
+}
+
+document.getElementById('mark-all-btn').addEventListener('click', function(e){
+	e.preventDefault();
+	fetch('/rendezvous/notifications/mark_all_read/', { method: 'POST' })
+		.then(res => res.json())
+		.then(data => { if (data.status === 'ok') loadNotifications(); });
+});
+
+document.addEventListener('DOMContentLoaded', function(){
+	loadNotifications();
+	// poll every 12 seconds
+	setInterval(loadNotifications, 12000);
+});
+</script>
+
+{% endblock %}
