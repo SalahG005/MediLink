@@ -4,7 +4,8 @@ from django.core.paginator import Paginator
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 from .models import Medecin
-from django.db.models import Q
+from django.db.models import Q, Value, CharField
+from django.db.models.functions import Concat
 
 
 def _ensure_admin(request):
@@ -28,14 +29,45 @@ def liste_medecins(request):
         medecins = medecins.filter(statut=statut_filter)
 
     # Recherche
-    search_query = request.GET.get('search', '')
+    search_query = request.GET.get('search', '').strip()
     if search_query:
-        medecins = medecins.filter(
+        # Annoter avec le nom complet pour permettre la recherche sur le nom complet
+        medecins = medecins.annotate(
+            full_name=Concat(
+                'user__first_name',
+                Value(' '),
+                'user__last_name',
+                output_field=CharField()
+            )
+        )
+        
+        # Diviser la recherche en mots pour chercher dans le nom complet
+        search_words = search_query.split()
+        
+        # Construire la requête de recherche
+        search_q = Q()
+        
+        # Si plusieurs mots, chercher le nom complet qui contient tous les mots
+        if len(search_words) > 1:
+            # Chercher dans le nom complet
+            search_q |= Q(full_name__icontains=search_query)
+            # Chercher aussi séparément dans first_name et last_name
+            search_q |= Q(user__first_name__icontains=search_words[0]) & Q(user__last_name__icontains=search_words[-1])
+        else:
+            # Un seul mot : chercher dans tous les champs
+            search_q |= Q(full_name__icontains=search_query)
+        
+        # Recherche dans les autres champs
+        search_q |= (
             Q(user__first_name__icontains=search_query)
             | Q(user__last_name__icontains=search_query)
             | Q(user__email__icontains=search_query)
-            | Q(specialite__icontains=search_query)
+            | Q(specialite__nom_specialite__icontains=search_query)
+            | Q(numero_ordre__icontains=search_query)
+            | Q(telephone__icontains=search_query)
         )
+        
+        medecins = medecins.filter(search_q)
 
     paginator = Paginator(medecins, 10)
     page_number = request.GET.get('page')

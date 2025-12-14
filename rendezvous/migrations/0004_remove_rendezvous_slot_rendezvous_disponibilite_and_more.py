@@ -4,6 +4,17 @@ import django.db.models.deletion
 from django.db import migrations, models
 
 
+def clear_rendezvous_data(apps, schema_editor):
+    """Supprime les rendez-vous existants pour éviter les conflits"""
+    RendezVous = apps.get_model('rendezvous', 'RendezVous')
+    RendezVous.objects.all().delete()
+
+
+def reverse_migrate(apps, schema_editor):
+    """Fonction de rollback si nécessaire"""
+    pass
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -12,16 +23,23 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        # Supprimer les données existantes pour éviter les conflits
+        migrations.RunPython(clear_rendezvous_data, reverse_migrate),
+        # Supprimer le champ slot
         migrations.RemoveField(
             model_name='rendezvous',
             name='slot',
         ),
+        # Ajouter le champ disponibilite
         migrations.AddField(
             model_name='rendezvous',
             name='disponibilite',
-            field=models.OneToOneField(default=1, on_delete=django.db.models.deletion.CASCADE, to='disponibilite.disponibilite'),
-            preserve_default=False,
+            field=models.OneToOneField(
+                on_delete=django.db.models.deletion.CASCADE,
+                to='disponibilite.disponibilite'
+            ),
         ),
+        # Supprimer le modèle TimeSlot
         migrations.DeleteModel(
             name='TimeSlot',
         ),
