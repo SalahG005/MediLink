@@ -1,115 +1,115 @@
-# MediLink — Plateforme Médicale Intelligente
+# MediLink — Intelligent Medical Platform
 
-**MediLink** est une application web de gestion médicale qui intègre l'intelligence artificielle pour la détection précoce du cancer de la peau. Elle couvre l'authentification multi-rôles, la prise de rendez-vous, le suivi des dossiers et un assistant médical conversationnel.
+**MediLink** is a medical management web app that uses artificial intelligence for early skin-cancer detection. It covers multi-role sign-in, appointment booking, medical-record follow-up, and a conversational medical assistant.
 
 <p align="center">
-  <img src="docs/screenshots/01-login.png" alt="Page de connexion MediLink" width="800"/>
+  <img src="docs/screenshots/01-login.png" alt="MediLink sign-in page" width="800"/>
 </p>
 
 <p align="center">
-  <em>Connexion multi-rôles — Patient, Médecin, Administrateur</em>
+  <em>Multi-role sign-in — Patient, Doctor, Administrator</em>
 </p>
 
 ---
 
-## Fonctionnalités
+## Features
 
 | Module | Description |
 |--------|-------------|
-| **Multi-rôles** | Espaces dédiés Patient, Médecin et Administrateur avec authentification sécurisée |
-| **Détection IA** | Analyse d'images dermatoscopiques (ResNet-152, U-Net, EfficientNet-B4) |
-| **Rendez-vous** | Calendrier interactif, disponibilités et gestion des statuts |
-| **Chatbot médical** | Assistant intelligent basé sur Google Gemini |
-| **Dossiers médicaux** | Historique et consultation sécurisée |
-| **Tableaux de bord** | Statistiques et visualisations par rôle |
-| **Notifications** | Alertes en temps réel (validations, confirmations de RDV) |
+| **Multi-role** | Dedicated Patient, Doctor, and Administrator spaces with secure sign-in |
+| **AI detection** | Dermoscopic image analysis (ResNet-152, U-Net, EfficientNet-B4) |
+| **Appointments** | Interactive calendar, availability, and status management |
+| **Medical chatbot** | Intelligent assistant powered by Google Gemini |
+| **Medical records** | Secure history and consultation |
+| **Dashboards** | Statistics and charts by role |
+| **Notifications** | Real-time alerts (validations, appointment confirmations) |
 
 ---
 
-## Aperçu de l'interface
+## Interface overview
 
-### Espace Patient
+### Patient space
 
-Espace personnel pour gérer le profil, les rendez-vous, le scanner cutané et le chatbot.
+A personal area for the profile, appointments, the skin scanner, and the chatbot.
 
-| Accueil patient | Mes rendez-vous |
+| Patient home | My appointments |
 |:---------------:|:---------------:|
-| <img src="docs/screenshots/02-patient-dashboard.png" width="400" alt="Tableau de bord patient"/> | <img src="docs/screenshots/03-patient-appointments.png" width="400" alt="Mes rendez-vous"/> |
+| <img src="docs/screenshots/02-patient-dashboard.png" width="400" alt="Patient dashboard"/> | <img src="docs/screenshots/03-patient-appointments.png" width="400" alt="My appointments"/> |
 
-| Notifications | Scanner peau |
+| Notifications | Skin scanner |
 |:-------------:|:------------:|
-| <img src="docs/screenshots/04-patient-notifications.png" width="400" alt="Notifications patient"/> | <img src="docs/screenshots/05-skin-scanner.png" width="400" alt="Scanner peau"/> |
+| <img src="docs/screenshots/04-patient-notifications.png" width="400" alt="Patient notifications"/> | <img src="docs/screenshots/05-skin-scanner.png" width="400" alt="Skin scanner"/> |
 
-| Historique des scans | Chatbot médical |
+| Scan history | Medical chatbot |
 |:--------------------:|:---------------:|
-| <img src="docs/screenshots/06-scan-history.png" width="400" alt="Historique des scans"/> | <img src="docs/screenshots/07-medical-chatbot.png" width="400" alt="Chatbot médical"/> |
+| <img src="docs/screenshots/06-scan-history.png" width="400" alt="Scan history"/> | <img src="docs/screenshots/07-medical-chatbot.png" width="400" alt="Medical chatbot"/> |
 
-### Espace Médecin
+### Doctor space
 
-Tableau de bord clinique, calendrier des disponibilités et validation des rendez-vous.
+Clinical dashboard, availability calendar, and appointment review.
 
-| Dashboard médecin | Calendrier des disponibilités |
+| Doctor dashboard | Availability calendar |
 |:-----------------:|:-----------------------------:|
-| <img src="docs/screenshots/08-doctor-dashboard.png" width="400" alt="Dashboard médecin"/> | <img src="docs/screenshots/09-availability-calendar.png" width="400" alt="Calendrier disponibilités"/> |
+| <img src="docs/screenshots/08-doctor-dashboard.png" width="400" alt="Doctor dashboard"/> | <img src="docs/screenshots/09-availability-calendar.png" width="400" alt="Availability calendar"/> |
 
 <p align="center">
-  <img src="docs/screenshots/10-appointment-management.png" alt="Gestion des rendez-vous" width="700"/>
+  <img src="docs/screenshots/10-appointment-management.png" alt="Appointment management" width="700"/>
 </p>
-<p align="center"><em>Liste des rendez-vous — confirmer, reporter ou annuler</em></p>
+<p align="center"><em>Appointment list — confirm, reschedule, or cancel</em></p>
 
-### Espace Administrateur
+### Administrator space
 
-Validation des médecins, statistiques globales et supervision des scans.
+Doctor approval, overall statistics, and scan supervision.
 
-| Accueil admin | Statistiques |
+| Admin home | Statistics |
 |:-------------:|:------------:|
-| <img src="docs/screenshots/11-admin-dashboard.png" width="400" alt="Dashboard administrateur"/> | <img src="docs/screenshots/12-admin-statistics.png" width="400" alt="Statistiques admin"/> |
+| <img src="docs/screenshots/11-admin-dashboard.png" width="400" alt="Administrator dashboard"/> | <img src="docs/screenshots/12-admin-statistics.png" width="400" alt="Admin statistics"/> |
 
-| Validation des médecins | Notifications admin |
+| Doctor approval | Admin notifications |
 |:-----------------------:|:-------------------:|
-| <img src="docs/screenshots/13-doctor-validation.png" width="400" alt="Validation médecins"/> | <img src="docs/screenshots/14-admin-notifications.png" width="400" alt="Notifications admin"/> |
+| <img src="docs/screenshots/13-doctor-validation.png" width="400" alt="Doctor approval"/> | <img src="docs/screenshots/14-admin-notifications.png" width="400" alt="Admin notifications"/> |
 
 <p align="center">
-  <img src="docs/screenshots/15-admin-scans.png" alt="Dashboard scans administrateur" width="700"/>
+  <img src="docs/screenshots/15-admin-scans.png" alt="Administrator scan dashboard" width="700"/>
 </p>
-<p align="center"><em>Tableau de bord des scans — répartition par niveau de risque</em></p>
+<p align="center"><em>Scan dashboard — breakdown by risk level</em></p>
 
 ---
 
 ## Technologies
 
-| Catégorie | Stack |
+| Category | Stack |
 |-----------|-------|
 | **Backend** | Django 4.0+, Python, SQLite, Django Signals |
 | **Frontend** | HTML5, CSS3, Bootstrap 5, JavaScript, FullCalendar.js |
-| **IA / ML** | TensorFlow, Keras, OpenCV, NumPy, ResNet-152, U-Net, EfficientNet-B4 |
+| **AI / ML** | TensorFlow, Keras, OpenCV, NumPy, ResNet-152, U-Net, EfficientNet-B4 |
 | **APIs** | Google Gemini API |
 
-### Pipeline de détection IA
+### AI detection pipeline
 
 ```text
-Upload → Preprocessing → Skin Detection → Segmentation → Classification → Résultats
+Upload → Preprocessing → Skin Detection → Segmentation → Classification → Results
 ```
 
 ---
 
 ## Installation
 
-### Prérequis
+### Requirements
 
 - Python 3.8+
 - pip
 
-### Étapes
+### Steps
 
-1. **Cloner le dépôt**
+1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/maramfarhat/MediLink.git
+   git clone https://github.com/SalahG005/MediLink.git
    cd MediLink
    ```
 
-2. **Créer un environnement virtuel**
+2. **Create a virtual environment**
 
    ```bash
    python -m venv venv
@@ -119,84 +119,84 @@ Upload → Preprocessing → Skin Detection → Segmentation → Classification 
    source venv/bin/activate
    ```
 
-3. **Installer les dépendances**
+3. **Install dependencies**
 
    ```bash
    pip install -r requirements.txt
    ```
 
-4. **Configurer l'API Gemini** (chatbot)
+4. **Configure the Gemini API** (chatbot)
 
-   Créer un fichier `.env` à la racine :
+   Create a `.env` file at the repository root:
 
    ```env
-   GEMINI_API_KEY=votre_cle_api
+   GEMINI_API_KEY=your_api_key
    ```
 
-5. **Appliquer les migrations**
+5. **Apply migrations**
 
    ```bash
    python manage.py migrate
    ```
 
-6. **Créer un superutilisateur** (optionnel)
+6. **Create a superuser** (optional)
 
    ```bash
    python manage.py createsuperuser
    ```
 
-7. **Lancer le serveur**
+7. **Start the server**
 
    ```bash
    python manage.py runserver
    ```
 
-L'application est accessible sur **http://127.0.0.1:8000/**
+The app is available at **http://127.0.0.1:8000/**
 
 ---
 
-## Structure du projet
+## Project structure
 
 ```text
 MediLink/
-├── medical/            # Configuration Django
-├── users/              # Patients, médecins, administrateurs
-├── dossiers/           # Dossiers médicaux
-├── gestion_medecins/   # Validation et gestion des médecins
-├── rendezvous/         # Prise et suivi des rendez-vous
-├── disponibilite/      # Disponibilités des médecins
-├── dashboard/          # Tableaux de bord
-├── chatbot/            # Assistant médical (Gemini)
-├── specialite/         # Spécialités médicales
-├── templates/          # Templates HTML partagés
-├── static/             # Assets statiques
-├── docs/screenshots/   # Captures d'écran (README)
+├── medical/            # Django configuration
+├── users/              # Patients, doctors, administrators
+├── dossiers/           # Medical records
+├── gestion_medecins/   # Doctor approval and management
+├── rendezvous/         # Appointment booking and follow-up
+├── disponibilite/      # Doctor availability
+├── dashboard/          # Dashboards
+├── chatbot/            # Medical assistant (Gemini)
+├── specialite/         # Medical specialties
+├── templates/          # Shared HTML templates
+├── static/             # Static assets
+├── docs/screenshots/   # README screenshots
 └── requirements.txt
 ```
 
 ---
 
-## Routes principales
+## Main routes
 
 | URL | Description |
 |-----|-------------|
-| `/` | Accueil et authentification |
-| `/admin/` | Administration Django |
-| `/dossiers/` | Dossiers médicaux |
-| `/medecins/` | Gestion des médecins |
-| `/rendezvous/` | Rendez-vous |
-| `/dashboard/` | Tableaux de bord |
-| `/chatbot/` | Chatbot médical |
-| `/skin-cancer/` | Détection IA du cancer de la peau |
+| `/` | Home and sign-in |
+| `/admin/` | Django administration |
+| `/dossiers/` | Medical records |
+| `/medecins/` | Doctor management |
+| `/rendezvous/` | Appointments |
+| `/dashboard/` | Dashboards |
+| `/chatbot/` | Medical chatbot |
+| `/skin-cancer/` | AI skin-cancer detection |
 
 ---
 
-## Auteurs
+## Authors
 
-Développé dans le cadre d'un projet de plateforme médicale intelligente.
+Built as an intelligent medical-platform project.
 
 ---
 
 <p align="center">
-  <sub>© 2025 MediLink — Tous droits réservés</sub>
+  <sub>© 2025 MediLink — All rights reserved</sub>
 </p>
